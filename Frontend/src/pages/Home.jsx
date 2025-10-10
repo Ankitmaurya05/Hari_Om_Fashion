@@ -12,7 +12,6 @@ import {
   Star,
 } from "lucide-react";
 
-// Lazy load ProductCard to reduce bundle size
 const ProductCard = React.lazy(() => import("../components/ProductCard"));
 
 // ---------- Assets ----------
@@ -151,9 +150,6 @@ const Home = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleAddToCart = (p) =>
-    showToast("Added to cart", `${p.name} added successfully`);
-
   return (
     <div className="bg-[#fff8fb] min-h-screen overflow-hidden">
       <Toasts toasts={toasts} removeToast={removeToast} />
@@ -200,17 +196,6 @@ const Home = () => {
             </motion.div>
           ))}
         </div>
-        <div className="absolute bottom-6 right-6 flex gap-2 z-20">
-          {bannerImages.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentSlide(i)}
-              className={`w-3 h-3 rounded-full ${
-                i === currentSlide ? "bg-pink-500" : "bg-white/60"
-              }`}
-            />
-          ))}
-        </div>
       </section>
 
       {/* 💎 CATEGORIES */}
@@ -238,7 +223,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ✨ TRENDING PRODUCTS */}
+      {/* ✨ TRENDING PRODUCTS — Redesigned */}
       <section className="max-w-7xl mx-auto px-4 mt-16">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
@@ -258,16 +243,52 @@ const Home = () => {
         ) : trending.length === 0 ? (
           <p className="text-gray-600">No trending products found.</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <Suspense fallback={<div>Loading...</div>}>
-              {trending.map((p) => (
-                <ProductCard
-                  key={p._id}
-                  product={p}
-                  onAddToCart={() => handleAddToCart(p)}
-                />
-              ))}
-            </Suspense>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {trending.map((p) => (
+              <motion.div
+                key={p._id}
+                whileHover={{ scale: 1.03 }}
+                className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden cursor-pointer transition-all"
+              >
+                <div className="relative w-full h-48 sm:h-56 overflow-hidden">
+                  <img
+                    src={p.image || "/placeholder.png"}
+                    alt={p.name}
+                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="p-3 sm:p-4">
+                  <h3 className="text-sm font-semibold text-gray-800 truncate">
+                    {p.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                    {p.brand || p.category}
+                  </p>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-pink-600 font-semibold text-sm">
+                      ₹{p.price}
+                    </span>
+                    {p.oldPrice && (
+                      <span className="text-gray-400 text-xs line-through">
+                        ₹{p.oldPrice}
+                      </span>
+                    )}
+                    {p.discount && (
+                      <span className="text-green-600 text-xs font-medium">
+                        ({p.discount}% OFF)
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 mt-1 text-yellow-500 text-xs">
+                    <Star size={12} fill="currentColor" />
+                    <span className="text-gray-700">{p.rating || "4.0"}</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </section>
