@@ -1,6 +1,6 @@
 // src/pages/Home.jsx
 import React, { useEffect, useState, useRef, useCallback, Suspense } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 motion
@@ -22,7 +22,6 @@ import lahnga from "../assets/catagery/lahnga.jpg";
 import growns from "../assets/catagery/growns.jpg";
 import kurti from "../assets/catagery/kurti.jpg";
 import salwar from "../assets/catagery/salwar.jpg";
-// ----------------------------
 
 // ✅ Toast System
 const Toasts = ({ toasts, removeToast }) => (
@@ -122,6 +121,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { toasts, showToast, removeToast } = useToasts();
+  const navigate = useNavigate();
 
   const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
@@ -150,13 +150,22 @@ const Home = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const handleAddToCart = (p) =>
+    showToast("Added to cart", `${p.name} added successfully`);
+
+  // 🟣 Ensure category redirects work on mobile
+  const handleCategoryClick = (category) => {
+    showToast(`${category}`, "Opening category...");
+    navigate(`/category/${category.toLowerCase()}`);
+  };
+
   return (
     <div className="bg-[#fff8fb] min-h-screen overflow-hidden">
       <Toasts toasts={toasts} removeToast={removeToast} />
 
       {/* 🏵 HERO SECTION */}
       <section className="relative max-w-7xl mx-auto px-4 pt-6 md:pt-10">
-        <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-lg">
+        <div className="relative w-full h-[250px] sm:h-[350px] md:h-[500px] rounded-2xl overflow-hidden shadow-lg">
           {bannerImages.map((img, i) => (
             <motion.div
               key={i}
@@ -170,17 +179,17 @@ const Home = () => {
               <LazyImage src={img} alt={`banner-${i}`} />
               <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-pink-200/10 flex items-center">
                 <div className="text-white px-6 md:px-12">
-                  <h1 className="text-3xl md:text-5xl font-extrabold drop-shadow">
+                  <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold drop-shadow">
                     Unleash Your Inner Diva
                   </h1>
-                  <p className="mt-3 text-sm md:text-base text-white/90 max-w-md">
+                  <p className="mt-2 sm:mt-3 text-sm sm:text-base text-white/90 max-w-md">
                     Curated trends, premium fabrics, and exclusive designs — made for you.
                   </p>
-                  <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="mt-4 sm:mt-6 flex flex-wrap gap-3">
                     <Link
                       to="/shop"
                       onClick={() => showToast("Loading shop...")}
-                      className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 px-5 py-2 rounded-lg font-semibold shadow text-white transition"
+                      className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 px-4 sm:px-5 py-2 rounded-lg font-semibold shadow text-white transition"
                     >
                       <ShoppingBag size={18} /> Shop Now
                     </Link>
@@ -196,99 +205,83 @@ const Home = () => {
             </motion.div>
           ))}
         </div>
-      </section>
 
-      {/* 💎 CATEGORIES */}
-      <section className="max-w-7xl mx-auto px-4 mt-14">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold">Shop by Category</h2>
-          <p className="text-gray-500">Find your perfect look</p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-          {categories.map((c) => (
-            <Link
-              key={c.name}
-              to={`/category/${c.name.toLowerCase()}`}
-              className="group relative overflow-hidden rounded-2xl shadow hover:shadow-xl transition-transform hover:-translate-y-1 bg-white"
-              onClick={() => showToast(`${c.name}`, "Opening category")}
-            >
-              <LazyImage src={c.image} alt={c.name} className="group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <h3 className="text-white text-xl md:text-2xl font-bold tracking-wide">
-                  {c.name}
-                </h3>
-              </div>
-            </Link>
+        {/* Slider dots */}
+        <div className="absolute bottom-6 right-6 flex gap-2 z-20">
+          {bannerImages.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`w-2.5 h-2.5 rounded-full ${
+                i === currentSlide ? "bg-pink-500" : "bg-white/60"
+              }`}
+            />
           ))}
         </div>
       </section>
 
-      {/* ✨ TRENDING PRODUCTS — Redesigned */}
-      <section className="max-w-7xl mx-auto px-4 mt-16">
+      {/* 💎 CATEGORIES */}
+      <section className="max-w-7xl mx-auto px-4 mt-12 sm:mt-14">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+            Shop by Category
+          </h2>
+          <p className="text-gray-500 text-sm sm:text-base">
+            Find your perfect look
+          </p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-5 md:gap-6">
+          {categories.map((c) => (
+            <div
+              key={c.name}
+              onClick={() => handleCategoryClick(c.name)}
+              className="cursor-pointer group relative overflow-hidden rounded-2xl shadow hover:shadow-xl transition-transform hover:-translate-y-1 bg-white"
+            >
+              <LazyImage
+                src={c.image}
+                alt={c.name}
+                className="group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wide">
+                  {c.name}
+                </h3>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ✨ TRENDING PRODUCTS */}
+      <section className="max-w-7xl mx-auto px-4 mt-14">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
             <Sparkles className="text-pink-500" /> Trending Products
           </h2>
-          <Link to="/shop" className="text-pink-600 font-medium hover:underline">
+          <Link to="/shop" className="text-pink-600 font-medium hover:underline text-sm sm:text-base">
             View All
           </Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl h-64 shadow-sm" />
+              <div key={i} className="bg-white rounded-xl h-56 sm:h-64 shadow-sm" />
             ))}
           </div>
         ) : trending.length === 0 ? (
-          <p className="text-gray-600">No trending products found.</p>
+          <p className="text-gray-600 text-center">No trending products found.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {trending.map((p) => (
-              <motion.div
-                key={p._id}
-                whileHover={{ scale: 1.03 }}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden cursor-pointer transition-all"
-              >
-                <div className="relative w-full h-48 sm:h-56 overflow-hidden">
-                  <img
-                    src={p.image || "/placeholder.png"}
-                    alt={p.name}
-                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-
-                <div className="p-3 sm:p-4">
-                  <h3 className="text-sm font-semibold text-gray-800 truncate">
-                    {p.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5 capitalize">
-                    {p.brand || p.category}
-                  </p>
-
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-pink-600 font-semibold text-sm">
-                      ₹{p.price}
-                    </span>
-                    {p.oldPrice && (
-                      <span className="text-gray-400 text-xs line-through">
-                        ₹{p.oldPrice}
-                      </span>
-                    )}
-                    {p.discount && (
-                      <span className="text-green-600 text-xs font-medium">
-                        ({p.discount}% OFF)
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1 mt-1 text-yellow-500 text-xs">
-                    <Star size={12} fill="currentColor" />
-                    <span className="text-gray-700">{p.rating || "4.0"}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <Suspense fallback={<div>Loading...</div>}>
+              {trending.map((p) => (
+                <ProductCard
+                  key={p._id}
+                  product={p}
+                  onAddToCart={() => handleAddToCart(p)}
+                />
+              ))}
+            </Suspense>
           </div>
         )}
       </section>
@@ -301,19 +294,25 @@ const Home = () => {
           </h2>
           <p className="text-gray-500 mt-2">Real voices from our happy clients</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {reviews.map((r, i) => (
             <motion.div
               key={i}
               whileHover={{ scale: 1.03 }}
               className="bg-white p-6 rounded-2xl shadow-lg"
             >
-              <p className="text-gray-700 italic">“{r.text}”</p>
+              <p className="text-gray-700 italic text-sm sm:text-base">
+                “{r.text}”
+              </p>
               <div className="flex items-center justify-between mt-4">
                 <span className="text-pink-600 font-semibold">{r.name}</span>
                 <div className="flex gap-1">
                   {Array.from({ length: 5 }).map((_, j) => (
-                    <Star key={j} size={14} fill={j < r.rating ? "#facc15" : "none"} />
+                    <Star
+                      key={j}
+                      size={14}
+                      fill={j < r.rating ? "#facc15" : "none"}
+                    />
                   ))}
                 </div>
               </div>
@@ -326,13 +325,13 @@ const Home = () => {
       <section className="max-w-7xl mx-auto px-4 mb-24">
         <motion.div
           whileHover={{ scale: 1.01 }}
-          className="rounded-3xl bg-gradient-to-r from-pink-500 to-pink-400 text-white p-8 md:p-14 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl"
+          className="rounded-3xl bg-gradient-to-r from-pink-500 to-pink-400 text-white p-6 sm:p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl"
         >
           <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold">
               Ready to Redefine Your Wardrobe?
             </h3>
-            <p className="mt-2 text-white/90 max-w-xl">
+            <p className="mt-2 text-white/90 max-w-xl text-sm sm:text-base">
               Discover new trends, exclusive designs, and luxury comfort — all in one place.
             </p>
           </div>
