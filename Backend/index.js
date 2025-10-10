@@ -48,7 +48,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ----------------- CORS Setup -----------------
-const allowedOrigins = ["https://hariomfashion.onrender.com/", "http://localhost:5174"];
+const allowedOrigins = ["https://hariomfashion.onrender.com/", "https://hari-om-fashion-admin.onrender.com/"];
 app.use(
   cors({
     origin: allowedOrigins,
