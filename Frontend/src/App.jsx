@@ -21,11 +21,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProductDetail from "./components/ProductDetail";
 import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
 
 // Contexts
 import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
-import OrderSuccess from "./pages/OrderSuccess";
 
 function App() {
   return (
@@ -34,12 +34,12 @@ function App() {
         <Router>
           <Navbar />
 
-          {/* Toast Container for global notifications */}
+          {/* Toast Notifications */}
           <ToastContainer
             position="top-right"
             autoClose={2500}
             hideProgressBar={false}
-            newestOnTop={true}
+            newestOnTop
             closeOnClick
             rtl={false}
             pauseOnFocusLoss
@@ -48,18 +48,24 @@ function App() {
             theme="colored"
           />
 
-          <div className="pt-[120px] md:pt-[95px]">
+          <div className="pt-[60px] md:pt-[95px]">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/checkout" element={<Checkout />} />
-               <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+              <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+
+              {/* Category page */}
               <Route path="/category/:name" element={<Category />} />
+
+              {/* Product detail */}
+              <Route path="/product/:id" element={<ProductDetail />} />
+
+              {/* Cart & Wishlist */}
               <Route path="/cart" element={<Cart />} />
               <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
 
               {/* Protected Account Route */}
               <Route

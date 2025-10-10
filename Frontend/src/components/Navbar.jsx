@@ -1,29 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingBag, Heart, User, ChevronDown, ClipboardList } from "lucide-react";
+import { NavLink, Link } from "react-router-dom";
+import {
+  Menu,
+  X,
+  ShoppingBag,
+  Heart,
+  User,
+  ChevronDown,
+  ClipboardList,
+} from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useWishlist } from "../contexts/WishlistContext";
-
-import jeans from "../assets/catagery/jeans.jpg";
-import lahnga from "../assets/catagery/lahnga.jpg";
-import growns from "../assets/catagery/growns.jpg";
-import kurti from "../assets/catagery/kurti.jpg";
-import salwar from "../assets/catagery/salwar.jpg";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const dropdownRef = useRef();
-  const navigate = useNavigate();
   const { cart } = useCart();
   const { wishlistCount } = useWishlist();
 
   const categories = [
-    { name: "Jeans", path: "/category/jeans", img: jeans },
-    { name: "Kurtis", path: "/category/kurtis", img: kurti },
-    { name: "Gowns", path: "/category/gowns", img: growns },
-    { name: "Lehenga", path: "/category/lehenga", img: lahnga },
-    { name: "Salwar", path: "/category/salwar", img: salwar },
+    { name: "Jeans", path: "/category/jeans" },
+    { name: "Kurtis", path: "/category/kurtis" },
+    { name: "Gowns", path: "/category/gowns" },
+    { name: "Lehenga", path: "/category/lehenga" },
+    { name: "Salwar", path: "/category/salwar" },
   ];
 
   const navLinks = [
@@ -41,13 +42,14 @@ const Navbar = () => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-gray-200 shadow-md">
+    <header className="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-md">
       {/* Top Bar */}
       <div className="hidden md:flex justify-between items-center text-sm bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white py-2 px-10">
         <p>📞 +91 63553 83106</p>
@@ -76,30 +78,25 @@ const Navbar = () => {
                 >
                   Categories <ChevronDown size={16} />
                 </button>
+
+                {/* Desktop Categories Dropdown */}
                 <div
-                  className={`absolute left-1/2 -translate-x-1/2 top-[48px] w-[520px] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border p-5 grid grid-cols-3 gap-4 transition-all duration-300 ${
-                    categoriesOpen ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-3 invisible"
+                  className={`absolute left-1/2 -translate-x-1/2 top-[48px] w-[400px] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border p-5 grid grid-cols-3 gap-4 transition-all duration-300 ${
+                    categoriesOpen
+                      ? "opacity-100 translate-y-0 visible"
+                      : "opacity-0 -translate-y-3 invisible"
                   }`}
                   style={{ zIndex: 9999 }}
                 >
                   {categories.map((cat, idx) => (
-                    <div
+                    <NavLink
                       key={idx}
-                      onClick={() => {
-                        navigate(cat.path);
-                        setCategoriesOpen(false);
-                      }}
-                      className="cursor-pointer rounded-xl overflow-hidden hover:shadow-lg transition-transform hover:-translate-y-1 group"
+                      to={cat.path}
+                      className="cursor-pointer text-center text-sm font-semibold text-[#1565c0] hover:text-pink-500 transition"
+                      onClick={() => setCategoriesOpen(false)}
                     >
-                      <img
-                        src={cat.img}
-                        alt={cat.name}
-                        className="w-full h-24 object-cover rounded-xl transform group-hover:scale-110 transition duration-500"
-                      />
-                      <p className="text-center mt-2 text-sm font-semibold text-[#1565c0] group-hover:text-pink-500">
-                        {cat.name}
-                      </p>
-                    </div>
+                      {cat.name}
+                    </NavLink>
                   ))}
                 </div>
               </li>
@@ -109,7 +106,9 @@ const Navbar = () => {
                   to={link.path}
                   className={({ isActive }) =>
                     `transition duration-200 pb-1 ${
-                      isActive ? "text-pink-500 font-semibold border-b-2 border-pink-500" : "hover:text-pink-500"
+                      isActive
+                        ? "text-pink-500 font-semibold border-b-2 border-pink-500"
+                        : "hover:text-pink-500"
                     }`
                   }
                 >
@@ -150,14 +149,17 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-[#1565c0] focus:outline-none">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden text-[#1565c0] focus:outline-none"
+        >
           {menuOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
       </nav>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 px-6 pb-6 animate-fadeIn shadow-md">
+        <div className="md:hidden bg-white border-t border-gray-200 px-6 pb-6 shadow-md">
           <ul className="flex flex-col gap-4 mt-3 text-gray-700 font-medium">
             {navLinks.map((link, i) =>
               link.dropdown ? (
@@ -168,27 +170,24 @@ const Navbar = () => {
                   >
                     Categories <ChevronDown size={18} />
                   </p>
+
+                  {/* Swipeable Horizontal Categories */}
                   {categoriesOpen && (
-                    <ul className="pl-2 mt-2 grid grid-cols-2 gap-3">
+                    <div className="mt-3 flex overflow-x-auto gap-4 pb-2">
                       {categories.map((cat, j) => (
-                        <li
+                        <NavLink
                           key={j}
+                          to={cat.path}
                           onClick={() => {
-                            navigate(cat.path);
                             setMenuOpen(false);
                             setCategoriesOpen(false);
                           }}
-                          className="cursor-pointer"
+                          className="flex-shrink-0 px-4 py-2 bg-[#e0e7ff] rounded-xl text-[#1565c0] font-medium hover:bg-pink-100 hover:text-pink-500 transition"
                         >
-                          <img
-                            src={cat.img}
-                            alt={cat.name}
-                            className="w-full h-20 object-cover rounded-lg hover:scale-105 transition"
-                          />
-                          <p className="text-center text-sm font-medium text-[#1565c0] mt-1">{cat.name}</p>
-                        </li>
+                          {cat.name}
+                        </NavLink>
                       ))}
-                    </ul>
+                    </div>
                   )}
                 </li>
               ) : (
@@ -196,7 +195,11 @@ const Navbar = () => {
                   <NavLink
                     to={link.path}
                     onClick={() => setMenuOpen(false)}
-                    className={({ isActive }) => `block py-1 ${isActive ? "text-pink-500 font-semibold" : "hover:text-pink-500"}`}
+                    className={({ isActive }) =>
+                      `block py-1 ${
+                        isActive ? "text-pink-500 font-semibold" : "hover:text-pink-500"
+                      }`
+                    }
                   >
                     {link.name}
                   </NavLink>

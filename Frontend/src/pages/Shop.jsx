@@ -10,6 +10,7 @@ const Shop = () => {
   const [category, setCategory] = useState("All");
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [size, setSize] = useState("All");
+  const [showFilters, setShowFilters] = useState(false); // Mobile toggle
 
   const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
@@ -48,119 +49,106 @@ const Shop = () => {
     );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#fff9fb]">
-      {/* Sidebar */}
-      <aside className="w-full md:w-1/5 bg-white border-r border-pink-100 px-6 py-8 md:sticky md:top-0 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6 tracking-wide border-b pb-3 border-pink-200">
-          Filters
-        </h2>
+    <div className="min-h-screen bg-[#fff9fb]">
+      {/* Mobile Filter Toggle */}
+      <div className="md:hidden px-4 py-3 bg-white border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-gray-700">Filters</h2>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="text-pink-500 font-semibold"
+        >
+          {showFilters ? "Close" : "Show"}
+        </button>
+      </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-col gap-3 mb-6">
-          <h3 className="text-sm font-bold text-gray-700 uppercase">Category</h3>
-          {["All", "Jeans", "Kurtis", "Gowns", "Lehenga", "Salwar"].map(
-            (cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`text-left text-sm transition-all duration-300 rounded-md px-2 py-1 ${
-                  category === cat
-                    ? "bg-pink-100 text-pink-600 font-semibold shadow-inner"
-                    : "text-gray-600 hover:text-pink-500 hover:bg-pink-50"
-                }`}
-              >
-                {cat}
-              </button>
-            )
-          )}
-        </div>
+      {/* Filters */}
+      <div
+        className={`${
+          showFilters ? "block" : "hidden"
+        } md:flex flex-col md:flex-row md:w-1/5 bg-white md:sticky md:top-0 px-4 py-6 md:px-6 md:py-8 border-b md:border-b-0 md:border-r border-gray-200 md:h-screen`}
+      >
+        <div className="flex flex-col gap-5 md:gap-6 w-full">
+          {/* Category Filter */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-700 uppercase mb-2">
+              Category
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {["All", "Jeans", "Kurtis", "Gowns", "Lehenga", "Salwar"].map(
+                (cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setCategory(cat)}
+                    className={`px-3 py-1 rounded-full border text-sm transition-all ${
+                      category === cat
+                        ? "bg-pink-500 text-white border-pink-500 shadow"
+                        : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
 
-        {/* Price Filter */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-gray-700 uppercase mb-3">
-            Price Range
-          </h3>
-          <div className="flex flex-col gap-2 text-sm">
-            {[
-              { label: "Under ₹500", range: [0, 500] },
-              { label: "₹500 - ₹1000", range: [500, 1000] },
-              { label: "₹1000 - ₹3000", range: [1000, 3000] },
-              { label: "₹3000 - ₹5000", range: [3000, 5000] },
-              { label: "₹5000+", range: [5000, 100000] },
-            ].map((p) => (
-              <button
-                key={p.label}
-                onClick={() => setPriceRange(p.range)}
-                className={`text-left px-2 py-1 rounded-md transition-all ${
-                  priceRange[0] === p.range[0] &&
-                  priceRange[1] === p.range[1]
-                    ? "bg-pink-100 text-pink-600 font-semibold shadow-inner"
-                    : "text-gray-600 hover:text-pink-500 hover:bg-pink-50"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+          {/* Price Filter */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-700 uppercase mb-2">
+              Price Range
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Under ₹500", range: [0, 500] },
+                { label: "₹500 - ₹1000", range: [500, 1000] },
+                { label: "₹1000 - ₹3000", range: [1000, 3000] },
+                { label: "₹3000 - ₹5000", range: [3000, 5000] },
+                { label: "₹5000+", range: [5000, 100000] },
+              ].map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => setPriceRange(p.range)}
+                  className={`px-3 py-1 rounded-full border text-sm transition-all ${
+                    priceRange[0] === p.range[0] &&
+                    priceRange[1] === p.range[1]
+                      ? "bg-pink-100 text-pink-600 font-semibold shadow"
+                      : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Size Filter */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-700 uppercase mb-2">
+              Size
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {["All", "XS", "S", "M", "L", "XL", "XXL"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSize(s)}
+                  className={`px-3 py-1 rounded-full border text-sm transition-all ${
+                    size === s
+                      ? "bg-pink-500 text-white border-pink-500 shadow"
+                      : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Size Filter */}
-        <div>
-          <h3 className="text-sm font-bold text-gray-700 uppercase mb-3">
-            Size
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {["All", "XS", "S", "M", "L", "XL", "XXL"].map((s) => (
-              <button
-                key={s}
-                onClick={() => setSize(s)}
-                className={`px-3 py-1 rounded-full border text-sm transition-all ${
-                  size === s
-                    ? "bg-pink-500 text-white border-pink-500 shadow-lg"
-                    : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      </aside>
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b pb-4 border-pink-100">
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-widest">
-              Women &gt; {category}
-            </p>
-            <h1 className="text-3xl font-bold mt-1 text-gray-900">
-              {category === "All" ? "All Products" : category}
-            </h1>
-          </div>
-
-          <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
-            <select className="border border-pink-200 bg-white rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-pink-300 outline-none">
-              <option>Sort by</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-            </select>
-            <select
-              className="border border-pink-200 bg-white rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-pink-300 outline-none"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-            >
-              <option value="All">Size</option>
-              {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
+      <main className="px-4 py-6 md:pl-6 md:flex-1">
         {/* Active Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-4">
           {category !== "All" && (
             <span className="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-medium flex items-center gap-1">
               {category}
@@ -187,7 +175,7 @@ const Shop = () => {
 
         {/* Product Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}

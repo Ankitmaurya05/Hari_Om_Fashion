@@ -35,19 +35,21 @@ const Category = () => {
         {/* Loader Spinner */}
         <div className="w-14 h-14 border-4 border-blue-400 border-t-pink-500 rounded-full animate-spin"></div>
         <p className="mt-4 text-lg font-medium text-gray-600 animate-pulse">
-          Loading {name} products...
+          Loading {name.charAt(0).toUpperCase() + name.slice(1)} products...
         </p>
       </div>
     );
 
   return (
     <div className="container mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-8 text-center text-[#1565c0]">
+      {/* Category Title */}
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center text-[#1565c0]">
         {name.charAt(0).toUpperCase() + name.slice(1)} Collection
       </h1>
 
+      {/* Products Grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
