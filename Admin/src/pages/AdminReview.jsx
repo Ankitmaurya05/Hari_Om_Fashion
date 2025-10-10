@@ -7,7 +7,7 @@ const AdminReview = () => {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
-  const API_URL = "https://hari-om-fashion.onrender.com/api/reviews";
+  const API_URL = `${import.meta.env.VITE_API_URL}/reviews`; // Using env variable
 
   // Fetch all reviews
   const fetchReviews = async () => {

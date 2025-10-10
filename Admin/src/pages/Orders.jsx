@@ -6,11 +6,13 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL; // Using env variable
+
   // Fetch all orders
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://hari-om-fashion.onrender.com/api/admin/orders/all");
+      const res = await axios.get(`${API_URL}/admin/orders/all`);
       setOrders(res.data);
     } catch (err) {
       console.error(err.response?.data || err.message);
@@ -27,10 +29,9 @@ const AdminOrders = () => {
   // Update order status
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const res = await axios.patch(
-        `https://hari-om-fashion.onrender.com/api/admin/orders/${orderId}/status`,
-        { status: newStatus }
-      );
+      const res = await axios.patch(`${API_URL}/admin/orders/${orderId}/status`, {
+        status: newStatus,
+      });
 
       setOrders((prev) =>
         prev.map((order) =>
@@ -73,7 +74,9 @@ const AdminOrders = () => {
       printWindow.document.write(`<p>${item.name} - Qty: ${item.quantity} - ₹${item.price}</p>`);
     });
 
-    printWindow.document.write(`<h3>Total: ₹${(order.total + (order.shippingFee ?? 49)).toLocaleString("en-IN")}</h3>`);
+    printWindow.document.write(
+      `<h3>Total: ₹${(order.total + (order.shippingFee ?? 49)).toLocaleString("en-IN")}</h3>`
+    );
 
     printWindow.document.write("</body></html>");
     printWindow.document.close();
@@ -91,10 +94,7 @@ const AdminOrders = () => {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <div
-              key={order._id}
-              className="bg-white p-4 rounded-xl shadow flex flex-col gap-3"
-            >
+            <div key={order._id} className="bg-white p-4 rounded-xl shadow flex flex-col gap-3">
               {/* Order Header */}
               <div className="flex justify-between items-center">
                 <p className="font-semibold">Order ID: {order._id}</p>
@@ -137,7 +137,10 @@ const AdminOrders = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1">Items</h3>
                   {order.items?.map((item, idx) => (
-                    <div key={item.product?._id || idx} className="flex items-center gap-3 border-b py-2">
+                    <div
+                      key={item.product?._id || idx}
+                      className="flex items-center gap-3 border-b py-2"
+                    >
                       <img
                         src={item.mainImage ?? ""}
                         alt={item.name ?? "Product"}

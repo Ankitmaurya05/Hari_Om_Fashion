@@ -24,6 +24,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const [loadingPayments, setLoadingPayments] = useState(true);
 
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL; // Env variable
 
   // Redirect if no token
   useEffect(() => {
@@ -38,7 +39,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const fetchCounts = async () => {
     setLoadingCounts(true);
     try {
-      const res = await axios.get("https://hari-om-fashion.onrender.com/api/dashboard/counts", {
+      const res = await axios.get(`${API_URL}/dashboard/counts`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
       setCounts(res.data);
@@ -53,7 +54,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const fetchPayments = async () => {
     setLoadingPayments(true);
     try {
-      const res = await axios.get("https://hari-om-fashion.onrender.com/api/dashboard/payments", {
+      const res = await axios.get(`${API_URL}/dashboard/payments`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
 
@@ -147,7 +148,6 @@ const AdminDashboard = ({ activeTab = "" }) => {
                 </ResponsiveContainer>
               )}
             </div>
-
           </div>
         );
     }

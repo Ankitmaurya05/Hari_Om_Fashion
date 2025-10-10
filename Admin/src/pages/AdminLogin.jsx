@@ -1,4 +1,3 @@
-// AdminLogin.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +7,8 @@ const AdminLogin = ({ setIsLoggedIn, toast }) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const API_URL = `${import.meta.env.VITE_API_URL}/admin/login`; // Env variable
 
   // Redirect if already logged in
   useEffect(() => {
@@ -22,7 +23,7 @@ const AdminLogin = ({ setIsLoggedIn, toast }) => {
 
     try {
       const res = await axios.post(
-        "https://hari-om-fashion.onrender.com/api/admin/login",
+        API_URL,
         { username, password },
         { headers: { "Content-Type": "application/json" } }
       );
