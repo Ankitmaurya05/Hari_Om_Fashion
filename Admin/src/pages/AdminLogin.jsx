@@ -22,7 +22,7 @@ const AdminLogin = ({ setIsLoggedIn, toast }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/admin/login",
+        "https://hari-om-fashion.onrender.com/api/admin/login",
         { username, password },
         { headers: { "Content-Type": "application/json" } }
       );

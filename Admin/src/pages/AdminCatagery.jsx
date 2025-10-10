@@ -10,7 +10,7 @@ const AdminCatagery = () => {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
-  const API_URL = "http://localhost:5000/api/products"; // Your backend products route
+  const API_URL = "https://hari-om-fashion.onrender.com/api/products"; // Your backend products route
 
   // Fetch all products
   const fetchProducts = async () => {

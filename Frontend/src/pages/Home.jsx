@@ -124,7 +124,7 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { toasts, showToast, removeToast } = useToasts();
 
-  const API_URL = "http://localhost:5000/api/products";
+  const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
   // Fetch trending
   useEffect(() => {

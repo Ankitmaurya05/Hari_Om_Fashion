@@ -7,7 +7,7 @@ const Category = () => {
   const { name } = useParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API_URL = "http://localhost:5000/api/products";
+  const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
   useEffect(() => {
     const fetchProducts = async () => {

@@ -10,7 +10,7 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/orders/all");
+      const res = await axios.get("https://hari-om-fashion.onrender.com/api/admin/orders/all");
       setOrders(res.data);
     } catch (err) {
       console.error(err.response?.data || err.message);
@@ -28,7 +28,7 @@ const AdminOrders = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const res = await axios.patch(
-        `http://localhost:5000/api/admin/orders/${orderId}/status`,
+        `https://hari-om-fashion.onrender.com/api/admin/orders/${orderId}/status`,
         { status: newStatus }
       );
 

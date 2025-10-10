@@ -6,7 +6,7 @@ const AdminUsers = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "http://localhost:5000/api/dashboard/users";
+  const API_URL = "https://hari-om-fashion.onrender.com/api/dashboard/users";
   const token = localStorage.getItem("token"); // if protected route
 
   const fetchUsers = async () => {

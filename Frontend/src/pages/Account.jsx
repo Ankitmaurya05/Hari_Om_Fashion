@@ -7,7 +7,7 @@ const Account = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const API_URL = "http://localhost:5000/api/auth/me"; // Backend route to get current user
+  const API_URL = "https://hari-om-fashion.onrender.com/api/auth/me"; // Backend route to get current user
 
   useEffect(() => {
     const token = localStorage.getItem("token");

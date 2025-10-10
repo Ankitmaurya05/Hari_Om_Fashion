@@ -38,7 +38,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const fetchCounts = async () => {
     setLoadingCounts(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/dashboard/counts", {
+      const res = await axios.get("https://hari-om-fashion.onrender.com/api/dashboard/counts", {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
       setCounts(res.data);
@@ -53,7 +53,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const fetchPayments = async () => {
     setLoadingPayments(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/dashboard/payments", {
+      const res = await axios.get("https://hari-om-fashion.onrender.com/api/dashboard/payments", {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
 

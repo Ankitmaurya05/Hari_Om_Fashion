@@ -11,7 +11,7 @@ const OrderSuccess = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/orders/latest", {
+      const res = await axios.get("https://hari-om-fashion.onrender.com/api/orders/latest", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrder(res.data);

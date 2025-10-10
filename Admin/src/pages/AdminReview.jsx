@@ -7,7 +7,7 @@ const AdminReview = () => {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
-  const API_URL = "http://localhost:5000/api/reviews";
+  const API_URL = "https://hari-om-fashion.onrender.com/api/reviews";
 
   // Fetch all reviews
   const fetchReviews = async () => {

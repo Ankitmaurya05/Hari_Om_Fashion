@@ -11,7 +11,7 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [size, setSize] = useState("All");
 
-  const API_URL = "http://localhost:5000/api/products";
+  const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
   useEffect(() => {
     const fetchProducts = async () => {

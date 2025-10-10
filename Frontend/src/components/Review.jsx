@@ -14,7 +14,7 @@ const Review = ({ productId, token, onUpdateRating }) => {
     if (!productId) return;
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/reviews/product/${productId}`);
+      const res = await axios.get(`https://hari-om-fashion.onrender.com/api/reviews/product/${productId}`);
       setReviews(res.data);
       if (onUpdateRating) onUpdateRating(res.data);
     } catch (err) {
@@ -49,7 +49,7 @@ const Review = ({ productId, token, onUpdateRating }) => {
     try {
       setSubmitting(true);
       await axios.post(
-        `http://localhost:5000/api/reviews/${productId}`,
+        `https://hari-om-fashion.onrender.com/api/reviews/${productId}`,
         {
           user: form.user.trim(),
           comment: form.comment.trim(),

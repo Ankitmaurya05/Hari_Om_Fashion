@@ -20,7 +20,7 @@ const ProductDetail = () => {
 
   const fetchProduct = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+      const res = await axios.get(`https://hari-om-fashion.onrender.com/api/products/${id}`);
       setProduct(res.data);
     } catch (err) {
       console.error(err);
@@ -36,9 +36,9 @@ const ProductDetail = () => {
     return <p className="text-center mt-10 text-gray-600">Loading product...</p>;
 
   const images = product.images?.length
-    ? product.images.map((img) => (img.startsWith("http") ? img : `http://localhost:5000/${img}`))
+    ? product.images.map((img) => (img.startsWith("http") ? img : `https://hari-om-fashion.onrender.com/${img}`))
     : product.mainImage
-    ? [product.mainImage.startsWith("http") ? product.mainImage : `http://localhost:5000/${product.mainImage}`]
+    ? [product.mainImage.startsWith("http") ? product.mainImage : `https://hari-om-fashion.onrender.com/${product.mainImage}`]
     : [];
 
   const isInCart = cart.some((item) => item._id === product._id && item.selectedSize === selectedSize);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Pencil, Trash2, Plus, X, Loader2 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api/products";
+const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);

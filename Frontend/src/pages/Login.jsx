@@ -8,7 +8,7 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const API_URL = "http://localhost:5000/api/auth";
+  const API_URL = "https://hari-om-fashion.onrender.com/api/auth";
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });

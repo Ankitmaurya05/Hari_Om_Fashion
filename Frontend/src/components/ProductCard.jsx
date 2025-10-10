@@ -31,7 +31,7 @@ const ProductCard = ({ product }) => {
     setLoadingReviews(true);
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/reviews/product/${product._id}`
+        `https://hari-om-fashion.onrender.com/api/reviews/product/${product._id}`
       );
       setReviews(res.data || []);
     } catch (err) {

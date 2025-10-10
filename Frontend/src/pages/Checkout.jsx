@@ -4,7 +4,7 @@ import { useCart } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const BACKEND_URL = "http://localhost:5000/api";
+const BACKEND_URL = "https://hari-om-fashion.onrender.com/api";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {

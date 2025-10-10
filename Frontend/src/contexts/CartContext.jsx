@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 
 // Axios instance
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://hari-om-fashion.onrender.com/api",
 });
 
 api.interceptors.request.use(

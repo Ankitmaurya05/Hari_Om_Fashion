@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
-const BACKEND_URL = "http://localhost:5000/api";
+const BACKEND_URL = "https://hari-om-fashion.onrender.com/api";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // card, upi, cod, pending
 
 const Payment = () => {
