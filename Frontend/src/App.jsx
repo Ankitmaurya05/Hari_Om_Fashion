@@ -19,7 +19,6 @@ import Wishlist from "./pages/Wishlist";
 import Account from "./pages/Account";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ProductAdmin from "./Admin/ProductAdmin";
 import ProductDetail from "./components/ProductDetail";
 import Checkout from "./pages/Checkout";
 
@@ -61,7 +60,6 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/add" element={<ProductAdmin />} />
 
               {/* Protected Account Route */}
               <Route
