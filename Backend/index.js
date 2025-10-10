@@ -9,26 +9,12 @@ import fs from "fs";
 // ----------------- Load Environment Variables -----------------
 dotenv.config();
 
-// ----------------- Route Imports -----------------
-import authRoutes from "./routes/auth.js";
-import productRoutes from "./routes/product.js";
-import cartRoutes from "./routes/cart.js";
-import wishlistRoutes from "./routes/wishlist.js";
-import reviewRoutes from "./routes/reviewRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import userRoutes from "./routes/user.js";
-import adminRoutes from "./routes/admin.js";
-import orderRoutes from "./routes/orderRoutes.js"; 
-import adminOrdersRoute from "./routes/adminOrders.js";
-import paymentWebhook from "./routes/paymentWebhook.js";
-import adminPaymentRoute from "./routes/adminPaymentRoutes.js";
-
-// ----------------- Initialize App -----------------
-const app = express();
-
 // ----------------- Fix __dirname for ES Modules -----------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ----------------- Initialize App -----------------
+const app = express();
 
 // ----------------- Ensure Uploads Folder Exists -----------------
 const uploadsPath = path.join(__dirname, "uploads");
@@ -38,42 +24,64 @@ if (!fs.existsSync(uploadsPath)) {
 }
 
 // ----------------- CORS Setup -----------------
+// Add the frontends you use (dev and prod). Add more if you host elsewhere.
 const allowedOrigins = [
-  "https://hariomfashion.onrender.com",
-  "https://hari-om-fashion-admin.onrender.com",
-  "http://localhost:5173"
+  "https://hariomfashion.onrender.com", // prod frontend (https)
+  "https://hari-om-fashion.onrender.com", // if you have this domain
+  "http://localhost:5173", // Vite dev (http)
+  "http://localhost:3000", // CRA dev (if any)
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // allow requests with no origin (like Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow requests with no origin (mobile apps, curl, postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.warn("Blocked CORS request from:", origin);
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
 
 // ----------------- Webhook Route FIRST (needs raw body) -----------------
-app.use(
-  "/api/webhook/razorpay",
-  express.raw({ type: "application/json" }),
-  paymentWebhook
-);
+import paymentWebhook from "./routes/paymentWebhook.js";
+app.use("/api/webhook/razorpay", express.raw({ type: "application/json" }), paymentWebhook);
 
 // ----------------- Regular Middleware -----------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ----------------- Serve Uploaded Images -----------------
-app.use("/uploads", express.static(uploadsPath));
+// ----------------- Serve Uploaded Images with open CORS for images -----------------
+// For static uploads, set Access-Control-Allow-Origin: * so images can be embedded cross-origin
+app.use("/uploads", (req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+}, express.static(uploadsPath));
 
-// ----------------- Security Headers Fix -----------------
+// ----------------- Route Imports -----------------
+import authRoutes from "./routes/auth.js";
+import productRoutes from "./routes/product.js";
+import cartRoutes from "./routes/cart.js";
+import wishlistRoutes from "./routes/wishlist.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import userRoutes from "./routes/user.js";
+import adminRoutes from "./routes/admin.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import adminOrdersRoute from "./routes/adminOrders.js";
+import adminPaymentRoute from "./routes/adminPaymentRoutes.js";
+
+// ----------------- Security Headers Fix (if required) -----------------
 app.use((req, res, next) => {
+  // remove header only if set upstream; harmless otherwise
   res.removeHeader("Cross-Origin-Opener-Policy");
   res.removeHeader("Cross-Origin-Embedder-Policy");
   next();
@@ -118,6 +126,10 @@ app.use((req, res) => {
 // ----------------- Global Error Handler -----------------
 app.use((err, req, res, next) => {
   console.error("❌ Server Error:", err.message || err);
+  // if CORS error, send 403 so it's clearer in logs
+  if (err.message && err.message.includes("CORS")) {
+    return res.status(403).json({ message: err.message });
+  }
   res.status(500).json({ message: err.message || "Internal Server Error" });
 });
 

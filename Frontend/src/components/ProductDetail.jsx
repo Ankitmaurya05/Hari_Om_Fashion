@@ -7,6 +7,11 @@ import { useCart } from "../contexts/CartContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import Review from "../components/Review";
 
+const BACKEND_BASE = "hari-om-fashion.onrender.com"; // hostname only (no protocol)
+const BACKEND_URL_HTTPS = `https://${BACKEND_BASE}`;
+const PLACEHOLDER =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D'600'%20height%3D'400'%20xmlns%3D'http%3A//www.w3.org/2000/svg'%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'%23f3f4f6'/%3E%3Ctext%20x%3D'50%25'%20y%3D'50%25'%20dominant-baseline%3D'middle'%20text-anchor%3D'middle'%20fill%3D'%239ca3af'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'20'%3EImage%20not%20available%3C/text%3E%3C/svg%3E";
+
 const ProductDetail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -20,10 +25,10 @@ const ProductDetail = () => {
 
   const fetchProduct = async () => {
     try {
-      const res = await axios.get(`https://hari-om-fashion.onrender.com/api/products/${id}`);
+      const res = await axios.get(`https://${BACKEND_BASE}/api/products/${id}`);
       setProduct(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch product error:", err);
       toast.error("Failed to load product", { toastId: "fetch-product" });
     }
   };
@@ -35,11 +40,27 @@ const ProductDetail = () => {
   if (!product)
     return <p className="text-center mt-10 text-gray-600">Loading product...</p>;
 
-  const images = product.images?.length
-    ? product.images.map((img) => (img.startsWith("http") ? img : `https://hari-om-fashion.onrender.com/${img}`))
+  // Helper: normalize image URLs (avoid mixed-content, handle absolute and relative)
+  const normalizeImageUrl = (img) => {
+    if (!img) return null;
+
+    // If already absolute (http or https) — convert to https for safety if backend supports it
+    if (/^https?:\/\//i.test(img)) {
+      // prefer https if page is https or if hostname matches
+      return img.replace(/^http:\/\//i, "https://");
+    }
+
+    // If image path already contains uploads with or without leading slash
+    const clean = img.replace(/^\/+/, ""); // remove leading slashes
+    return `${BACKEND_URL_HTTPS}/${clean}`;
+  };
+
+  const images = (product.images && product.images.length
+    ? product.images
     : product.mainImage
-    ? [product.mainImage.startsWith("http") ? product.mainImage : `https://hari-om-fashion.onrender.com/${product.mainImage}`]
-    : [];
+      ? [product.mainImage]
+      : []
+  ).map(normalizeImageUrl).filter(Boolean);
 
   const isInCart = cart.some((item) => item._id === product._id && item.selectedSize === selectedSize);
   const isInWishlist = wishlist.some((item) => item._id === product._id);
@@ -66,6 +87,10 @@ const ProductDetail = () => {
       <Star key={i} size={18} className={i < Math.round(rating || 0) ? "text-yellow-400" : "text-gray-300"} />
     ));
 
+  const handleImgError = (e) => {
+    e.currentTarget.src = PLACEHOLDER;
+  };
+
   return (
     <div className="backdrop-blur-lg min-h-screen py-12">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 px-4 sm:px-8">
@@ -76,24 +101,30 @@ const ProductDetail = () => {
             onMouseEnter={() => setZoom(true)}
             onMouseLeave={() => setZoom(false)}
           >
-            {images[selectedIndex] && (
+            {images[selectedIndex] ? (
               <img
                 src={images[selectedIndex]}
-                alt={product.name}
+                alt={product.name || "product image"}
+                onError={handleImgError}
                 className={`w-full h-full object-cover transition-transform duration-500 ${zoom ? "scale-110" : "scale-100"}`}
               />
+            ) : (
+              <img src={PLACEHOLDER} alt="placeholder" className="w-full h-full object-cover" />
             )}
+
             {images.length > 1 && (
               <>
                 <button
                   onClick={() => setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
                   className="absolute top-1/2 left-2 -translate-y-1/2 bg-white p-2 rounded-full shadow hover:bg-gray-100"
+                  aria-label="previous image"
                 >
                   <ChevronLeft />
                 </button>
                 <button
                   onClick={() => setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
                   className="absolute top-1/2 right-2 -translate-y-1/2 bg-white p-2 rounded-full shadow hover:bg-gray-100"
+                  aria-label="next image"
                 >
                   <ChevronRight />
                 </button>
@@ -108,9 +139,8 @@ const ProductDetail = () => {
                 key={i}
                 src={img}
                 alt={`thumb-${i}`}
-                className={`w-20 h-24 object-cover rounded-md border-2 cursor-pointer transition-all ${
-                  selectedIndex === i ? "border-[#1565c0] scale-105" : "border-gray-300 hover:border-blue-300"
-                }`}
+                onError={handleImgError}
+                className={`w-20 h-24 object-cover rounded-md border-2 cursor-pointer transition-all ${selectedIndex === i ? "border-[#1565c0] scale-105" : "border-gray-300 hover:border-blue-300"}`}
                 onClick={() => setSelectedIndex(i)}
               />
             ))}
@@ -129,12 +159,12 @@ const ProductDetail = () => {
             <span className="text-gray-500 text-sm">({product.reviewCount || 0} reviews)</span>
           </div>
 
-          <p className="text-2xl font-semibold text-[#1565c0] mb-2">₹{product.price.toLocaleString("en-IN")}</p>
+          <p className="text-2xl font-semibold text-[#1565c0] mb-2">₹{product.price?.toLocaleString("en-IN")}</p>
           <p className="text-sm text-gray-600 mb-3">
             Availability: <span className="font-medium text-green-600">In stock</span>
           </p>
           <p className="text-sm text-gray-600 mb-4">
-            Product Code: <span className="font-medium text-gray-800">{product._id.slice(-6).toUpperCase()}</span>
+            Product Code: <span className="font-medium text-gray-800">{product._id?.slice(-6).toUpperCase()}</span>
           </p>
 
           <p className="text-gray-700 mb-4 leading-relaxed">{product.description}</p>
@@ -154,9 +184,7 @@ const ProductDetail = () => {
                   <button
                     key={s}
                     onClick={() => setSelectedSize(s)}
-                    className={`px-4 py-2 rounded border text-sm ${
-                      selectedSize === s ? "bg-[#1565c0] text-white border-[#1565c0]" : "bg-gray-100 hover:bg-gray-200 border-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded border text-sm ${selectedSize === s ? "bg-[#1565c0] text-white border-[#1565c0]" : "bg-gray-100 hover:bg-gray-200 border-gray-300"}`}
                   >
                     {s}
                   </button>
@@ -170,9 +198,7 @@ const ProductDetail = () => {
             <button
               onClick={handleAddToCart}
               disabled={!selectedSize || isInCart}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow transition-all ${
-                !selectedSize || isInCart ? "bg-gray-400 cursor-not-allowed" : "bg-[#1565c0] hover:bg-blue-700"
-              }`}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow transition-all ${!selectedSize || isInCart ? "bg-gray-400 cursor-not-allowed" : "bg-[#1565c0] hover:bg-blue-700"}`}
             >
               <ShoppingBag size={18} />
               {isInCart ? "In Cart" : "Add to Cart"}
@@ -181,9 +207,7 @@ const ProductDetail = () => {
             <button
               onClick={handleAddToWishlist}
               disabled={isInWishlist}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow transition-all ${
-                isInWishlist ? "bg-gray-400 cursor-not-allowed" : "bg-pink-500 hover:bg-pink-600"
-              }`}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow transition-all ${isInWishlist ? "bg-gray-400 cursor-not-allowed" : "bg-pink-500 hover:bg-pink-600"}`}
             >
               <Heart size={18} />
               {isInWishlist ? "Wishlisted" : "Add to Wishlist"}
