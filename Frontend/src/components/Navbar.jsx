@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -16,6 +16,7 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const dropdownRef = useRef();
+  const navigate = useNavigate();
   const { cart } = useCart();
   const { wishlistCount } = useWishlist();
 
@@ -42,9 +43,14 @@ const Navbar = () => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleCategoryClick = (path) => {
+    navigate(path);
+    setCategoriesOpen(false);
+    setMenuOpen(false);
+  };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -79,7 +85,7 @@ const Navbar = () => {
                   Categories <ChevronDown size={16} />
                 </button>
 
-                {/* Desktop Categories Dropdown */}
+                {/* Categories Dropdown */}
                 <div
                   className={`absolute left-1/2 -translate-x-1/2 top-[48px] w-[400px] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border p-5 grid grid-cols-3 gap-4 transition-all duration-300 ${
                     categoriesOpen
@@ -89,14 +95,13 @@ const Navbar = () => {
                   style={{ zIndex: 9999 }}
                 >
                   {categories.map((cat, idx) => (
-                    <NavLink
+                    <button
                       key={idx}
-                      to={cat.path}
+                      onClick={() => handleCategoryClick(cat.path)}
                       className="cursor-pointer text-center text-sm font-semibold text-[#1565c0] hover:text-pink-500 transition"
-                      onClick={() => setCategoriesOpen(false)}
                     >
                       {cat.name}
-                    </NavLink>
+                    </button>
                   ))}
                 </div>
               </li>
@@ -148,7 +153,7 @@ const Navbar = () => {
           </NavLink>
         </div>
 
-        {/* Mobile Toggle */}
+        {/* Mobile Menu Toggle */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden text-[#1565c0] focus:outline-none"
@@ -171,21 +176,16 @@ const Navbar = () => {
                     Categories <ChevronDown size={18} />
                   </p>
 
-                  {/* Swipeable Horizontal Categories */}
                   {categoriesOpen && (
                     <div className="mt-3 flex overflow-x-auto gap-4 pb-2">
                       {categories.map((cat, j) => (
-                        <NavLink
+                        <button
                           key={j}
-                          to={cat.path}
-                          onClick={() => {
-                            setMenuOpen(false);
-                            setCategoriesOpen(false);
-                          }}
+                          onClick={() => handleCategoryClick(cat.path)}
                           className="flex-shrink-0 px-4 py-2 bg-[#e0e7ff] rounded-xl text-[#1565c0] font-medium hover:bg-pink-100 hover:text-pink-500 transition"
                         >
                           {cat.name}
-                        </NavLink>
+                        </button>
                       ))}
                     </div>
                   )}

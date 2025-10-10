@@ -40,7 +40,8 @@ if (!fs.existsSync(uploadsPath)) {
 // ----------------- CORS Setup -----------------
 const allowedOrigins = [
   "https://hariomfashion.onrender.com",
-  "https://hari-om-fashion-admin.onrender.com"
+  "https://hari-om-fashion-admin.onrender.com",
+  "http://localhost:5173"
 ];
 
 app.use(cors({
