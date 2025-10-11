@@ -27,6 +27,7 @@ if (!fs.existsSync(uploadsPath)) {
 const allowedOrigins = [
   "https://hari-om-fashion.onrender.com", // your production frontend
   "https://hariomfashion.onrender.com",
+  "https://hari-om-fashion-admin.onrender.com",
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
