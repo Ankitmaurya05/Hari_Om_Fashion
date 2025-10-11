@@ -27,6 +27,11 @@ export const CartProvider = ({ children }) => {
 
   // Fetch cart items
   const fetchCart = async () => {
+    if (!isLoggedIn) {
+      setCart([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = await api.get("/cart");
@@ -57,12 +62,16 @@ export const CartProvider = ({ children }) => {
     try {
       const res = await api.post("/cart/add", { productId: _id, selectedSize, quantity });
       setCart(res.data.items || []);
-      toast.dismiss();
-      toast.success("Added to cart!", { toastId: `add-${_id}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.success("Added to cart!", { toastId: `add-${_id}` });
+      }
     } catch (err) {
       console.error("Add to cart error:", err.response?.data || err.message);
-      toast.dismiss();
-      toast.error(err.response?.data?.message || "Failed to add to cart", { toastId: `addError-${_id}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.error(err.response?.data?.message || "Failed to add to cart", { toastId: `addError-${_id}` });
+      }
     }
   };
 
@@ -72,12 +81,16 @@ export const CartProvider = ({ children }) => {
     try {
       const res = await api.delete(`/cart/remove/${productId}?size=${selectedSize}`);
       setCart(res.data.items || []);
-      toast.dismiss();
-      toast.success("Removed from cart", { toastId: `remove-${productId}-${selectedSize}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.success("Removed from cart", { toastId: `remove-${productId}-${selectedSize}` });
+      }
     } catch (err) {
       console.error("Remove from cart error:", err.response?.data || err.message);
-      toast.dismiss();
-      toast.error(err.response?.data?.message || "Failed to remove item", { toastId: `removeError-${productId}-${selectedSize}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.error(err.response?.data?.message || "Failed to remove item", { toastId: `removeError-${productId}-${selectedSize}` });
+      }
     }
   };
 
@@ -90,8 +103,10 @@ export const CartProvider = ({ children }) => {
       setCart(res.data.items || []);
     } catch (err) {
       console.error("Update quantity error:", err.response?.data || err.message);
-      toast.dismiss();
-      toast.error(err.response?.data?.message || "Failed to update quantity", { toastId: `updateQty-${productId}-${selectedSize}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.error(err.response?.data?.message || "Failed to update quantity", { toastId: `updateQty-${productId}-${selectedSize}` });
+      }
     }
   };
 
@@ -101,12 +116,16 @@ export const CartProvider = ({ children }) => {
     try {
       const res = await api.put("/cart/update-size", { productId, oldSize, newSize });
       setCart(res.data.items || []);
-      toast.dismiss();
-      toast.success("Size updated!", { toastId: `updateSize-${productId}-${oldSize}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.success("Size updated!", { toastId: `updateSize-${productId}-${oldSize}` });
+      }
     } catch (err) {
       console.error("Update size error:", err.response?.data || err.message);
-      toast.dismiss();
-      toast.error(err.response?.data?.message || "Failed to update size", { toastId: `updateSizeError-${productId}-${oldSize}` });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.error(err.response?.data?.message || "Failed to update size", { toastId: `updateSizeError-${productId}-${oldSize}` });
+      }
     }
   };
 
@@ -116,12 +135,16 @@ export const CartProvider = ({ children }) => {
     try {
       await api.delete("/cart/clear");
       setCart([]);
-      toast.dismiss();
-      toast.success("Cart cleared", { toastId: "clearCart" });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.success("Cart cleared", { toastId: "clearCart" });
+      }
     } catch (err) {
       console.error("Clear cart error:", err.response?.data || err.message);
-      toast.dismiss();
-      toast.error(err.response?.data?.message || "Failed to clear cart", { toastId: "clearCartError" });
+      if (isLoggedIn) {
+        toast.dismiss();
+        toast.error(err.response?.data?.message || "Failed to clear cart", { toastId: "clearCartError" });
+      }
     }
   };
 

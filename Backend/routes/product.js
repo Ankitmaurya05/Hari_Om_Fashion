@@ -20,11 +20,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Helper: parse comma-separated strings
 const parseList = (val) =>
   typeof val === "string"
     ? val.split(",").map((v) => v.trim()).filter(Boolean)
     : val;
+
+// ----------------- Helper to get correct base URL -----------------
+const getBaseUrl = (req) => {
+  // If hosted on Render, always use HTTPS
+  const host = req.get("host");
+  if (host.includes("onrender.com")) return `https://${host}`;
+  return `${req.protocol}://${host}`;
+};
 
 // ===================== CREATE PRODUCT =====================
 router.post("/", upload.array("images", 6), async (req, res) => {
@@ -45,8 +52,10 @@ router.post("/", upload.array("images", 6), async (req, res) => {
     if (!name || !price)
       return res.status(400).json({ message: "Name and price are required" });
 
+    const baseUrl = getBaseUrl(req);
+
     const images = req.files.map(
-      (f) => `${req.protocol}://${req.get("host")}/uploads/${path.basename(f.path)}`
+      (f) => `${baseUrl}/uploads/${path.basename(f.path)}`
     );
 
     const product = new Product({
@@ -78,10 +87,11 @@ router.post("/", upload.array("images", 6), async (req, res) => {
 router.put("/:id", upload.array("images", 6), async (req, res) => {
   try {
     const updates = { ...req.body };
+    const baseUrl = getBaseUrl(req);
 
     if (req.files && req.files.length > 0) {
       updates.images = req.files.map(
-        (f) => `${req.protocol}://${req.get("host")}/uploads/${path.basename(f.path)}`
+        (f) => `${baseUrl}/uploads/${path.basename(f.path)}`
       );
       updates.mainImage = updates.images[0];
     }
@@ -133,7 +143,6 @@ router.get("/category/:category", async (req, res) => {
     const products = await Product.find({
       category: { $regex: new RegExp(`^${category}$`, "i") },
     }).sort({ createdAt: -1 });
-
     res.json(products);
   } catch (err) {
     console.error("❌ Get Products By Category Error:", err);

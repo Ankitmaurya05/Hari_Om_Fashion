@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
 import axios from "axios";
+import { SlidersHorizontal } from "lucide-react";
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,7 @@ const Shop = () => {
   const [category, setCategory] = useState("All");
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [size, setSize] = useState("All");
-  const [showFilters, setShowFilters] = useState(false); // Mobile toggle
+  const [showFilters, setShowFilters] = useState(false); // mobile toggle
 
   const API_URL = "https://hari-om-fashion.onrender.com/api/products";
 
@@ -40,37 +41,33 @@ const Shop = () => {
 
   if (loading)
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="w-16 h-16 border-4 border-pink-400 border-t-blue-500 rounded-full animate-spin"></div>
-        <p className="mt-4 text-lg font-medium text-gray-600 animate-pulse">
-          Loading products...
-        </p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] bg-pink-50">
+        <div className="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-gray-600 font-medium">Loading products...</p>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-[#fff9fb]">
-      {/* Mobile Filter Toggle */}
-      <div className="md:hidden px-4 py-3 bg-white border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-700">Filters</h2>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="text-pink-500 font-semibold"
-        >
-          {showFilters ? "Close" : "Show"}
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div
-        className={`${
-          showFilters ? "block" : "hidden"
-        } md:flex flex-col md:flex-row md:w-1/5 bg-white md:sticky md:top-0 px-4 py-6 md:px-6 md:py-8 border-b md:border-b-0 md:border-r border-gray-200 md:h-screen`}
+    <div className="bg-[#fff9fb] min-h-screen flex flex-col md:flex-row">
+      {/* Sidebar / Filters */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-4/5 max-w-xs bg-white shadow-md transform transition-transform duration-300 md:static md:translate-x-0 md:w-64 border-r border-gray-200
+        ${showFilters ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex flex-col gap-5 md:gap-6 w-full">
+        <div className="p-5 flex justify-between items-center border-b border-gray-200 md:hidden">
+          <h2 className="text-lg font-semibold text-gray-700">Filters</h2>
+          <button
+            onClick={() => setShowFilters(false)}
+            className="text-pink-500 font-semibold"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="p-6 flex flex-col gap-8 overflow-y-auto h-full">
           {/* Category Filter */}
           <div>
-            <h3 className="text-sm font-bold text-gray-700 uppercase mb-2">
+            <h3 className="text-sm font-bold text-gray-700 uppercase mb-3">
               Category
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -79,9 +76,9 @@ const Shop = () => {
                   <button
                     key={cat}
                     onClick={() => setCategory(cat)}
-                    className={`px-3 py-1 rounded-full border text-sm transition-all ${
+                    className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
                       category === cat
-                        ? "bg-pink-500 text-white border-pink-500 shadow"
+                        ? "bg-pink-500 text-white border-pink-500 shadow-md"
                         : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
                     }`}
                   >
@@ -92,9 +89,9 @@ const Shop = () => {
             </div>
           </div>
 
-          {/* Price Filter */}
+          {/* Price Range Filter */}
           <div>
-            <h3 className="text-sm font-bold text-gray-700 uppercase mb-2">
+            <h3 className="text-sm font-bold text-gray-700 uppercase mb-3">
               Price Range
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -108,9 +105,8 @@ const Shop = () => {
                 <button
                   key={p.label}
                   onClick={() => setPriceRange(p.range)}
-                  className={`px-3 py-1 rounded-full border text-sm transition-all ${
-                    priceRange[0] === p.range[0] &&
-                    priceRange[1] === p.range[1]
+                  className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
+                    priceRange[0] === p.range[0] && priceRange[1] === p.range[1]
                       ? "bg-pink-100 text-pink-600 font-semibold shadow"
                       : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
                   }`}
@@ -123,7 +119,7 @@ const Shop = () => {
 
           {/* Size Filter */}
           <div>
-            <h3 className="text-sm font-bold text-gray-700 uppercase mb-2">
+            <h3 className="text-sm font-bold text-gray-700 uppercase mb-3">
               Size
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -131,9 +127,9 @@ const Shop = () => {
                 <button
                   key={s}
                   onClick={() => setSize(s)}
-                  className={`px-3 py-1 rounded-full border text-sm transition-all ${
+                  className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
                     size === s
-                      ? "bg-pink-500 text-white border-pink-500 shadow"
+                      ? "bg-pink-500 text-white border-pink-500 shadow-md"
                       : "border-gray-300 text-gray-700 hover:border-pink-400 hover:text-pink-500"
                   }`}
                 >
@@ -143,14 +139,34 @@ const Shop = () => {
             </div>
           </div>
         </div>
-      </div>
+      </aside>
+
+      {/* Overlay for Mobile */}
+      {showFilters && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden"
+          onClick={() => setShowFilters(false)}
+        ></div>
+      )}
 
       {/* Main Content */}
-      <main className="px-4 py-6 md:pl-6 md:flex-1">
+      <main className="flex-1 p-4 md:p-8">
+        {/* Header / Filter Toggle */}
+        <div className="flex justify-between items-center mb-4 md:hidden">
+          <h1 className="text-xl font-semibold text-gray-800">Shop</h1>
+          <button
+            onClick={() => setShowFilters(true)}
+            className="flex items-center gap-2 text-pink-600 border border-pink-400 px-3 py-1.5 rounded-full text-sm font-medium"
+          >
+            <SlidersHorizontal size={16} />
+            Filters
+          </button>
+        </div>
+
         {/* Active Filters */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-5">
           {category !== "All" && (
-            <span className="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-medium flex items-center gap-1">
+            <span className="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm flex items-center gap-1">
               {category}
               <button
                 onClick={() => setCategory("All")}
@@ -161,7 +177,7 @@ const Shop = () => {
             </span>
           )}
           {size !== "All" && (
-            <span className="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-sm font-medium flex items-center gap-1">
+            <span className="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-sm flex items-center gap-1">
               {size}
               <button
                 onClick={() => setSize("All")}
@@ -175,15 +191,15 @@ const Shop = () => {
 
         {/* Product Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 mt-10 text-lg">
-            No products found.
-          </p>
+          <div className="text-center mt-10">
+            <p className="text-gray-500 text-lg">No products found.</p>
+          </div>
         )}
       </main>
     </div>

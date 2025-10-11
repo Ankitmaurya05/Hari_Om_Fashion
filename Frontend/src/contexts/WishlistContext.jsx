@@ -4,7 +4,8 @@ import { toast } from "react-toastify";
 
 const api = axios.create({ baseURL: "https://hari-om-fashion.onrender.com/api" });
 
-api.interceptors.request.use(config => {
+// ✅ Automatically attach token to requests
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
@@ -16,8 +17,9 @@ export const WishlistProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const isLoggedIn = !!localStorage.getItem("token"); // check user login
+  const isLoggedIn = !!localStorage.getItem("token");
 
+  // ✅ Fetch Wishlist
   const fetchWishlist = async () => {
     if (!isLoggedIn) {
       setWishlist([]);
@@ -43,12 +45,10 @@ export const WishlistProvider = ({ children }) => {
     if (isLoggedIn) fetchWishlist();
   }, []);
 
+  // ✅ Add to Wishlist
   const addToWishlist = async (product) => {
-    if (!isLoggedIn) {
-      toast.dismiss();
-      toast.error("Please login to add to wishlist", { toastId: "wishlistLoginError" });
-      return;
-    }
+    if (!isLoggedIn) return; // ❌ no toast if not logged in
+
     try {
       const res = await api.post("/wishlist/add", { productId: product._id });
       setWishlist(res.data.products || []);
@@ -57,12 +57,17 @@ export const WishlistProvider = ({ children }) => {
     } catch (err) {
       console.error("Add to wishlist error:", err);
       toast.dismiss();
-      toast.error(err.response?.data?.message || "Failed to add to wishlist", { toastId: `addError-${product._id}` });
+      toast.error(
+        err.response?.data?.message || "Failed to add to wishlist",
+        { toastId: `addError-${product._id}` }
+      );
     }
   };
 
+  // ✅ Remove from Wishlist
   const removeFromWishlist = async (productId) => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn) return; // ❌ no toast if not logged in
+
     try {
       const res = await api.delete(`/wishlist/remove/${productId}`);
       setWishlist(res.data.products || []);
@@ -79,11 +84,19 @@ export const WishlistProvider = ({ children }) => {
 
   return (
     <WishlistContext.Provider
-      value={{ wishlist, loading, addToWishlist, removeFromWishlist, wishlistCount }}
+      value={{
+        wishlist,
+        loading,
+        addToWishlist,
+        removeFromWishlist,
+        wishlistCount,
+        fetchWishlist,
+      }}
     >
       {children}
     </WishlistContext.Provider>
   );
 };
 
+// ✅ Custom Hook
 export const useWishlist = () => useContext(WishlistContext);

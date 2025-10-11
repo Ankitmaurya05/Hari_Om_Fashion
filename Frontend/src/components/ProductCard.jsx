@@ -5,6 +5,19 @@ import { toast } from "react-toastify";
 import { useWishlist } from "../contexts/WishlistContext";
 import axios from "axios";
 
+const BACKEND_URL = "https://hari-om-fashion.onrender.com";
+const PLACEHOLDER =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D'400'%20height%3D'300'%20xmlns%3D'http%3A//www.w3.org/2000/svg'%3E%3Crect%20fill%3D'%23f3f4f6'%20width%3D'400'%20height%3D'300'/%3E%3Ctext%20x%3D'50%25'%20y%3D'50%25'%20dominant-baseline%3D'middle'%20text-anchor%3D'middle'%20fill%3D'%239ca3af'%20font-family%3D'Arial'%20font-size%3D'16'%3ENo%20Image%3C/text%3E%3C/svg%3E";
+
+// ✅ Normalize any image (localhost, HTTP, relative)
+const normalizeImageUrl = (img) => {
+  if (!img) return PLACEHOLDER;
+  if (/^https?:\/\//i.test(img))
+    return img.replace(/^http:\/\//i, "https://");
+  const clean = img.replace(/^\/+/, "");
+  return `${BACKEND_URL}/${clean}`;
+};
+
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -18,26 +31,23 @@ const ProductCard = ({ product }) => {
 
   const images =
     product.images?.length > 0
-      ? product.images
-      : [product.mainImage || "/placeholder.png"];
+      ? product.images.map(normalizeImageUrl)
+      : [normalizeImageUrl(product.mainImage)];
 
-  // ✅ Check wishlist
   useEffect(() => {
     setWishlisted(wishlist.some((item) => item._id === product._id));
   }, [wishlist, product._id]);
 
-  // ✅ Fetch reviews
   const fetchReviews = useCallback(async () => {
     setLoadingReviews(true);
     try {
       const res = await axios.get(
-        `https://hari-om-fashion.onrender.com/api/reviews/product/${product._id}`
+        `${BACKEND_URL}/api/reviews/product/${product._id}`
       );
       setReviews(res.data || []);
     } catch (err) {
-      if (err.response?.status !== 404) {
+      if (err.response?.status !== 404)
         toast.error("Failed to load reviews.");
-      }
       setReviews([]);
     } finally {
       setLoadingReviews(false);
@@ -48,11 +58,10 @@ const ProductCard = ({ product }) => {
     fetchReviews();
   }, [fetchReviews]);
 
-  const averageRating = reviews.length
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+  const avgRating = reviews.length
+    ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length
     : 0;
 
-  // ✅ Wishlist toggle
   const handleToggleWishlist = async (e) => {
     e.stopPropagation();
     if (!token) {
@@ -72,39 +81,33 @@ const ProductCard = ({ product }) => {
         toast.success("💖 Added to Wishlist");
       }
     } catch (err) {
-      toast.error("Something went wrong while updating wishlist!",err);
+      toast.error("Error updating wishlist!", err);
     }
   };
 
-  const prevImage = (e) => {
+  const prevImg = (e) => {
     e.stopPropagation();
-    setCurrentImg((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentImg((p) => (p === 0 ? images.length - 1 : p - 1));
   };
-  const nextImage = (e) => {
+  const nextImg = (e) => {
     e.stopPropagation();
-    setCurrentImg((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentImg((p) => (p === images.length - 1 ? 0 : p + 1));
   };
 
-  const renderStars = () => {
-    const rating = Math.round(averageRating);
-    return Array.from({ length: 5 }, (_, i) => (
+  const renderStars = () =>
+    Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
         size={14}
-        className={i < rating ? "text-yellow-400" : "text-gray-300"}
+        className={i < Math.round(avgRating) ? "text-yellow-400" : "text-gray-300"}
       />
     ));
-  };
-
-  const handleViewDetails = () => {
-    navigate(`/product/${product._id}`);
-  };
 
   return (
     <div
+      onClick={() => navigate(`/product/${product._id}`)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={handleViewDetails}
       className="relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 cursor-pointer transition-transform duration-300 hover:-translate-y-1"
     >
       {/* Image Section */}
@@ -112,21 +115,15 @@ const ProductCard = ({ product }) => {
         <img
           src={images[currentImg]}
           alt={product.name}
+          onError={(e) => (e.currentTarget.src = PLACEHOLDER)}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
 
-        {/* Discount Tag */}
-        {product.discount && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
-            -{product.discount}%
-          </div>
-        )}
-
-        {/* Wishlist Button */}
+        {/* Wishlist */}
         <button
           onClick={handleToggleWishlist}
-          className={`absolute top-2 right-2 p-2 rounded-full transition-all shadow ${
+          className={`absolute top-2 right-2 p-2 rounded-full shadow transition-all ${
             wishlisted
               ? "bg-red-500 text-white"
               : "bg-white text-gray-700 hover:bg-pink-100"
@@ -135,61 +132,60 @@ const ProductCard = ({ product }) => {
           <Heart size={16} className={wishlisted ? "fill-current" : ""} />
         </button>
 
-        {/* Carousel Arrows */}
+        {/* Arrows */}
         {hovered && images.length > 1 && (
           <>
             <button
-              onClick={prevImage}
+              onClick={prevImg}
               className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1 shadow hover:bg-white"
             >
               <ChevronLeft size={16} />
             </button>
             <button
-              onClick={nextImage}
+              onClick={nextImg}
               className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1 shadow hover:bg-white"
             >
               <ChevronRight size={16} />
             </button>
           </>
         )}
-
-        {/* Dots Indicator */}
+        {/* Dots */}
         {images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
             {images.map((_, i) => (
-              <div
+              <span
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full ${
-                  i === currentImg ? "bg-pink-500" : "bg-gray-300"
+                className={`w-2 h-2 rounded-full transition-all ${
+                  currentImg === i ? "bg-gray-800" : "bg-gray-300"
                 }`}
-              />
+              ></span>
             ))}
           </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-3 text-center">
-        <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
+      <div className="p-4">
+        <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 mb-1">
           {product.name}
         </h3>
-        <div className="flex justify-center items-center mt-1">
-          <div className="flex">{renderStars()}</div>
-          <span className="text-xs text-gray-500 ml-1">
-            {loadingReviews ? "..." : `(${reviews.length})`}
-          </span>
-        </div>
+        <p className="text-gray-500 text-xs mb-2 capitalize">
+          {product.category || "Fashion"}
+        </p>
 
-        {/* Price Section */}
-        <div className="flex flex-col items-center mt-1">
-          {product.oldPrice && (
-            <span className="text-xs text-gray-400 line-through">
-              ₹{product.oldPrice}
-            </span>
-          )}
-          <span className="text-base font-bold text-green-600">
-            ₹{product.price}
-          </span>
+        {/* Price & Rating */}
+        <div className="flex justify-between items-center">
+          <p className="text-lg font-semibold text-[#1565c0]">
+            ₹{product.price?.toLocaleString("en-IN")}
+          </p>
+          <div className="flex items-center gap-1">
+            {renderStars()}
+            {!loadingReviews && (
+              <span className="text-xs text-gray-500 ml-1">
+                ({reviews.length})
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
