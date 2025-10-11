@@ -51,7 +51,6 @@ const AdminProducts = () => {
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
-  // Upload main image
   const handleMainUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -59,7 +58,6 @@ const AdminProducts = () => {
     setMainPreview(URL.createObjectURL(file));
   };
 
-  // Upload sub-images
   const handleSubUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length + subPreviews.length > 4) return alert("Max 4 sub-images allowed");
@@ -79,40 +77,6 @@ const AdminProducts = () => {
       return newPrev;
     });
     if (selectedSubIndex === index) setSelectedSubIndex(null);
-  };
-
-  // Submit or Update
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    try {
-      const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (key === "subImages") return value.forEach((file) => formData.append("images", file));
-        if (key === "mainImage" && value) formData.append("images", value);
-        else if (key === "sizes" && Array.isArray(value)) formData.append(key, value);
-        else if (key === "colors" && Array.isArray(value)) formData.append(key, value);
-        else if (key !== "subImages") formData.append(key, value);
-      });
-
-      const res = editingId
-        ? await axios.put(`${API_URL}/${editingId}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          })
-        : await axios.post(API_URL, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-
-      alert(editingId ? "Product updated!" : "Product added!");
-      fetchProducts();
-      resetForm();
-    } catch (err) {
-      console.error("❌ Submit Error:", err.response?.data || err.message);
-      alert("Something went wrong!");
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const resetForm = () => {
@@ -140,17 +104,17 @@ const AdminProducts = () => {
     setEditingId(product._id);
     setForm({
       ...product,
-      colors: product.colors || [],
       sizes: product.sizes || [],
+      colors: product.colors || [],
       mainImage: null,
       subImages: [],
     });
     setMainPreview(product.mainImage);
-    setSubPreviews(product.images.filter((img) => img !== product.mainImage));
+    setSubPreviews(product.images?.filter((img) => img !== product.mainImage) || []);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await axios.delete(`${API_URL}/${id}`);
       fetchProducts();
@@ -159,13 +123,46 @@ const AdminProducts = () => {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === "subImages") return value.forEach((file) => formData.append("images", file));
+        if (key === "mainImage" && value) formData.append("images", value);
+        else if (Array.isArray(value)) value.forEach((v) => formData.append(key, v));
+        else if (key !== "subImages") formData.append(key, value);
+      });
+
+      const res = editingId
+        ? await axios.put(`${API_URL}/${editingId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })
+        : await axios.post(API_URL, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+
+      alert(editingId ? "Product updated!" : "Product added!");
+      fetchProducts();
+      resetForm();
+    } catch (err) {
+      console.error("❌ Submit Error:", err.response?.data || err.message);
+      alert("Something went wrong!");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <h1 className="text-4xl font-bold text-center mb-8 text-blue-700">🛍️ Product Management</h1>
 
+      {/* FORM */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-2xl shadow-lg max-w-5xl mx-auto mb-10"
+        className="bg-white p-6 rounded-2xl shadow-lg max-w-6xl mx-auto mb-10"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
@@ -225,11 +222,12 @@ const AdminProducts = () => {
             onChange={handleChange}
             className="border p-3 rounded-lg"
           />
+
           <input
             type="text"
             name="colors"
             placeholder="Colors (comma separated)"
-            value={form.colors}
+            value={form.colors.join(",")}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, colors: e.target.value.split(",").map((c) => c.trim()) }))
             }
@@ -269,7 +267,7 @@ const AdminProducts = () => {
 
           {/* MAIN IMAGE */}
           <div className="col-span-2">
-            <p className="font-medium mb-4">Main Image</p>
+            <p className="font-medium mb-2">Main Image</p>
             {mainPreview && (
               <div className="relative inline-block mb-2">
                 <img src={mainPreview} alt="main" className="w-32 h-32 object-cover rounded-lg border" />
@@ -283,7 +281,7 @@ const AdminProducts = () => {
 
           {/* SUB IMAGES */}
           <div className="col-span-2">
-            <p className="font-medium mb-1">Sub Images</p>
+            <p className="font-medium mb-2">Sub Images (Max 4)</p>
             <div className="flex flex-wrap gap-3 mb-2">
               {subPreviews.map((img, i) => (
                 <div key={i} className="relative">
@@ -349,7 +347,7 @@ const AdminProducts = () => {
       ) : (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((p) => (
-            <div key={p._id} className="bg-white p-4 rounded-xl shadow hover:shadow-xl transition relative">
+            <div key={p._id} className="bg-white p-4 rounded-xl shadow hover:shadow-xl transition relative group">
               <img
                 src={p.mainImage || p.images?.[0]}
                 alt={p.name}
@@ -363,7 +361,7 @@ const AdminProducts = () => {
                   ⭐ Trending
                 </span>
               )}
-              <div className="flex justify-between mt-3">
+              <div className="flex justify-between mt-3 opacity-0 group-hover:opacity-100 transition">
                 <button
                   onClick={() => handleEdit(p)}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-600 font-medium"

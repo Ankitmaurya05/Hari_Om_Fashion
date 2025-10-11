@@ -9,13 +9,11 @@ const BACKEND_URL = "https://hari-om-fashion.onrender.com";
 const PLACEHOLDER =
   "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D'400'%20height%3D'300'%20xmlns%3D'http%3A//www.w3.org/2000/svg'%3E%3Crect%20fill%3D'%23f3f4f6'%20width%3D'400'%20height%3D'300'/%3E%3Ctext%20x%3D'50%25'%20y%3D'50%25'%20dominant-baseline%3D'middle'%20text-anchor%3D'middle'%20fill%3D'%239ca3af'%20font-family%3D'Arial'%20font-size%3D'16'%3ENo%20Image%3C/text%3E%3C/svg%3E";
 
-// ✅ Normalize any image (localhost, HTTP, relative)
+// ✅ Normalize Cloudinary & backend images
 const normalizeImageUrl = (img) => {
   if (!img) return PLACEHOLDER;
-  if (/^https?:\/\//i.test(img))
-    return img.replace(/^http:\/\//i, "https://");
-  const clean = img.replace(/^\/+/, "");
-  return `${BACKEND_URL}/${clean}`;
+  if (/^https?:\/\//i.test(img)) return img.replace(/^http:\/\//i, "https://");
+  return `${BACKEND_URL}/${img.replace(/^\/+/, "")}`;
 };
 
 const ProductCard = ({ product }) => {
@@ -46,8 +44,7 @@ const ProductCard = ({ product }) => {
       );
       setReviews(res.data || []);
     } catch (err) {
-      if (err.response?.status !== 404)
-        toast.error("Failed to load reviews.");
+      if (err.response?.status !== 404) toast.error("Failed to load reviews.");
       setReviews([]);
     } finally {
       setLoadingReviews(false);
@@ -110,7 +107,6 @@ const ProductCard = ({ product }) => {
       onMouseLeave={() => setHovered(false)}
       className="relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 cursor-pointer transition-transform duration-300 hover:-translate-y-1"
     >
-      {/* Image Section */}
       <div className="relative w-full aspect-[3/4] overflow-hidden">
         <img
           src={images[currentImg]}
@@ -119,8 +115,6 @@ const ProductCard = ({ product }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-
-        {/* Wishlist */}
         <button
           onClick={handleToggleWishlist}
           className={`absolute top-2 right-2 p-2 rounded-full shadow transition-all ${
@@ -132,7 +126,6 @@ const ProductCard = ({ product }) => {
           <Heart size={16} className={wishlisted ? "fill-current" : ""} />
         </button>
 
-        {/* Arrows */}
         {hovered && images.length > 1 && (
           <>
             <button
@@ -149,7 +142,6 @@ const ProductCard = ({ product }) => {
             </button>
           </>
         )}
-        {/* Dots */}
         {images.length > 1 && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
             {images.map((_, i) => (
@@ -164,7 +156,6 @@ const ProductCard = ({ product }) => {
         )}
       </div>
 
-      {/* Product Info */}
       <div className="p-4">
         <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 mb-1">
           {product.name}
@@ -173,7 +164,6 @@ const ProductCard = ({ product }) => {
           {product.category || "Fashion"}
         </p>
 
-        {/* Price & Rating */}
         <div className="flex justify-between items-center">
           <p className="text-lg font-semibold text-[#1565c0]">
             ₹{product.price?.toLocaleString("en-IN")}

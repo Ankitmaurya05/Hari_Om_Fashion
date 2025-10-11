@@ -2,26 +2,12 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs";
 
 // ----------------- Load Environment Variables -----------------
 dotenv.config();
 
-// ----------------- Fix __dirname -----------------
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // ----------------- Initialize App -----------------
 const app = express();
-
-// ----------------- Ensure Uploads Folder Exists -----------------
-const uploadsPath = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath, { recursive: true });
-  console.log("📁 Created uploads folder at:", uploadsPath);
-}
 
 // ----------------- CORS Setup -----------------
 const allowedOrigins = [
@@ -54,16 +40,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ----------------- Static Upload Folder -----------------
-app.use(
-  "/uploads",
-  (req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    next();
-  },
-  express.static(uploadsPath)
-);
-
 // ----------------- Routes -----------------
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/product.js";
@@ -85,7 +61,7 @@ app.use(
   paymentWebhook
 );
 
-// Disable certain headers
+// Disable certain headers for cross-origin embedding issues
 app.use((req, res, next) => {
   res.removeHeader("Cross-Origin-Opener-Policy");
   res.removeHeader("Cross-Origin-Embedder-Policy");

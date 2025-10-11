@@ -1,31 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import {
-  Heart,
-  ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-} from "lucide-react";
+import { Heart, ShoppingBag, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import { useCart } from "../contexts/CartContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import Review from "../components/Review";
 
-const BACKEND_BASE = "hari-om-fashion.onrender.com";
-const BACKEND_URL_HTTPS = `https://${BACKEND_BASE}`;
+const BACKEND_URL = "https://hari-om-fashion.onrender.com";
 const PLACEHOLDER =
   "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D'600'%20height%3D'400'%20xmlns%3D'http%3A//www.w3.org/2000/svg'%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'%23f3f4f6'/%3E%3Ctext%20x%3D'50%25'%20y%3D'50%25'%20dominant-baseline%3D'middle'%20text-anchor%3D'middle'%20fill%3D'%239ca3af'%20font-family%3D'Arial%2C%20sans-serif'%20font-size%3D'20'%3EImage%20not%20available%3C/text%3E%3C/svg%3E";
 
-// ✅ Normalize image URLs (fixes localhost + HTTP issues)
+// ✅ Normalize image URLs
 const normalizeImageUrl = (img) => {
-  if (!img) return null;
-  if (/^https?:\/\//i.test(img)) {
-    return img.replace(/^http:\/\//i, "https://");
-  }
-  const clean = img.replace(/^\/+/, "");
-  return `${BACKEND_URL_HTTPS}/${clean}`;
+  if (!img) return PLACEHOLDER;
+  if (/^https?:\/\//i.test(img)) return img.replace(/^http:\/\//i, "https://");
+  return `${BACKEND_URL}/${img.replace(/^\/+/, "")}`;
 };
 
 const ProductDetail = () => {
@@ -41,9 +31,7 @@ const ProductDetail = () => {
 
   const fetchProduct = async () => {
     try {
-      const res = await axios.get(
-        `https://${BACKEND_BASE}/api/products/${id}`
-      );
+      const res = await axios.get(`${BACKEND_URL}/api/products/${id}`);
       setProduct(res.data);
     } catch (err) {
       console.error("Fetch product error:", err);
@@ -56,18 +44,9 @@ const ProductDetail = () => {
   }, [id]);
 
   if (!product)
-    return (
-      <p className="text-center mt-10 text-gray-600">Loading product...</p>
-    );
+    return <p className="text-center mt-10 text-gray-600">Loading product...</p>;
 
-  // ✅ Normalize image URLs
-  const images = (
-    product.images?.length
-      ? product.images
-      : product.mainImage
-      ? [product.mainImage]
-      : []
-  )
+  const images = (product.images?.length ? product.images : [product.mainImage])
     .map(normalizeImageUrl)
     .filter(Boolean);
 
@@ -77,27 +56,20 @@ const ProductDetail = () => {
   const isInWishlist = wishlist.some((item) => item._id === product._id);
 
   const handleAddToCart = async () => {
-    if (!token)
-      return toast.info("Please login first", { toastId: "login-cart" });
-    if (!selectedSize)
-      return toast.error("Please select a size first", {
-        toastId: "select-size",
-      });
-    if (isInCart)
-      return toast.info("Already in cart", { toastId: "already-cart" });
+    if (!token) return toast.info("Please login first");
+    if (!selectedSize) return toast.error("Please select a size first");
+    if (isInCart) return toast.info("Already in cart");
 
     await addToCart({ ...product, selectedSize, quantity: 1 });
-    toast.success("Added to Cart!", { toastId: `cart-${product._id}` });
+    toast.success("Added to Cart!");
   };
 
   const handleAddToWishlist = async () => {
-    if (!token)
-      return toast.info("Please login first", { toastId: "login-wishlist" });
-    if (isInWishlist)
-      return toast.info("Already wishlisted", { toastId: "already-wishlist" });
+    if (!token) return toast.info("Please login first");
+    if (isInWishlist) return toast.info("Already wishlisted");
 
     await addToWishlist(product);
-    toast.success("Added to Wishlist!", { toastId: `wishlist-${product._id}` });
+    toast.success("Added to Wishlist!");
   };
 
   const renderStars = (rating) =>
@@ -105,11 +77,7 @@ const ProductDetail = () => {
       <Star
         key={i}
         size={18}
-        className={
-          i < Math.round(rating || 0)
-            ? "text-yellow-400"
-            : "text-gray-300"
-        }
+        className={i < Math.round(rating || 0) ? "text-yellow-400" : "text-gray-300"}
       />
     ));
 
@@ -127,22 +95,14 @@ const ProductDetail = () => {
             onMouseEnter={() => setZoom(true)}
             onMouseLeave={() => setZoom(false)}
           >
-            {images[selectedIndex] ? (
-              <img
-                src={images[selectedIndex]}
-                alt={product.name || "product image"}
-                onError={handleImgError}
-                className={`w-full h-full object-cover transition-transform duration-500 ${
-                  zoom ? "scale-110" : "scale-100"
-                }`}
-              />
-            ) : (
-              <img
-                src={PLACEHOLDER}
-                alt="placeholder"
-                className="w-full h-full object-cover"
-              />
-            )}
+            <img
+              src={images[selectedIndex]}
+              alt={product.name}
+              onError={handleImgError}
+              className={`w-full h-full object-cover transition-transform duration-500 ${
+                zoom ? "scale-110" : "scale-100"
+              }`}
+            />
 
             {images.length > 1 && (
               <>
@@ -170,7 +130,6 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Thumbnails */}
           <div className="flex gap-3 mt-4 flex-wrap justify-center">
             {images.map((img, i) => (
               <img
@@ -198,15 +157,11 @@ const ProductDetail = () => {
             ← Back to Products
           </p>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            {product.name}
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">{product.name}</h1>
 
           <div className="flex items-center gap-2 mb-2">
             <div className="flex">{renderStars(product.rating)}</div>
-            <span className="text-gray-500 text-sm">
-              ({product.reviewCount || 0} reviews)
-            </span>
+            <span className="text-gray-500 text-sm">({product.reviewCount || 0} reviews)</span>
           </div>
 
           <p className="text-2xl font-semibold text-[#1565c0] mb-2">
@@ -214,20 +169,14 @@ const ProductDetail = () => {
           </p>
 
           <p className="text-sm text-gray-600 mb-3">
-            Availability:{" "}
-            <span className="font-medium text-green-600">In stock</span>
+            Availability: <span className="font-medium text-green-600">In stock</span>
           </p>
 
           <p className="text-sm text-gray-600 mb-4">
-            Product Code:{" "}
-            <span className="font-medium text-gray-800">
-              {product._id?.slice(-6).toUpperCase()}
-            </span>
+            Product Code: <span className="font-medium text-gray-800">{product._id?.slice(-6).toUpperCase()}</span>
           </p>
 
-          <p className="text-gray-700 mb-4 leading-relaxed">
-            {product.description}
-          </p>
+          <p className="text-gray-700 mb-4 leading-relaxed">{product.description}</p>
 
           {/* Sizes */}
           {product.sizes?.length > 0 && (
@@ -257,9 +206,7 @@ const ProductDetail = () => {
               onClick={handleAddToCart}
               disabled={!selectedSize || isInCart}
               className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow transition-all ${
-                !selectedSize || isInCart
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#1565c0] hover:bg-blue-700"
+                !selectedSize || isInCart ? "bg-gray-400 cursor-not-allowed" : "bg-[#1565c0] hover:bg-blue-700"
               }`}
             >
               <ShoppingBag size={18} />
@@ -270,9 +217,7 @@ const ProductDetail = () => {
               onClick={handleAddToWishlist}
               disabled={isInWishlist}
               className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow transition-all ${
-                isInWishlist
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-pink-500 hover:bg-pink-600"
+                isInWishlist ? "bg-gray-400 cursor-not-allowed" : "bg-pink-500 hover:bg-pink-600"
               }`}
             >
               <Heart size={18} />
@@ -290,13 +235,8 @@ const ProductDetail = () => {
           token={token}
           onUpdateRating={(reviews) => {
             if (!reviews || !reviews.length) return;
-            const avg =
-              reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
-            setProduct((prev) => ({
-              ...prev,
-              rating: avg,
-              reviewCount: reviews.length,
-            }));
+            const avg = reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
+            setProduct((prev) => ({ ...prev, rating: avg, reviewCount: reviews.length }));
           }}
         />
       </div>
