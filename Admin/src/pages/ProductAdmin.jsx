@@ -106,7 +106,7 @@ const AdminProducts = () => {
       ...product,
       sizes: product.sizes || [],
       colors: product.colors || [],
-      mainImage: null,
+      mainImage: null, // don't overwrite unless uploading new
       subImages: [],
     });
     setMainPreview(product.mainImage);
@@ -125,16 +125,30 @@ const AdminProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.mainImage && !editingId) {
+      return alert("Main image is required for new products!");
+    }
+
     setSubmitting(true);
 
     try {
       const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (key === "subImages") return value.forEach((file) => formData.append("images", file));
-        if (key === "mainImage" && value) formData.append("images", value);
-        else if (Array.isArray(value)) value.forEach((v) => formData.append(key, v));
-        else if (key !== "subImages") formData.append(key, value);
-      });
+      formData.append("name", form.name);
+      formData.append("price", form.price);
+      if (form.originalPrice) formData.append("originalPrice", form.originalPrice);
+      formData.append("category", form.category);
+      formData.append("description", form.description);
+      if (form.fabric) formData.append("fabric", form.fabric);
+      if (form.careInstructions) formData.append("careInstructions", form.careInstructions);
+      form.sizes.forEach((s) => formData.append("sizes", s));
+      form.colors.forEach((c) => formData.append("colors", c));
+      formData.append("isTrending", form.isTrending);
+
+      // Append main image only if selected
+      if (form.mainImage) formData.append("images", form.mainImage); // backend takes first file as mainImage
+
+      // Append sub images
+      form.subImages.forEach((file) => formData.append("images", file));
 
       const res = editingId
         ? await axios.put(`${API_URL}/${editingId}`, formData, {
