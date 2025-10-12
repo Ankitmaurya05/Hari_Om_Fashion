@@ -30,10 +30,8 @@ router.post("/", async (req, res) => {
     if (!name || !price)
       return res.status(400).json({ message: "Name and price are required" });
 
-    // Validate images
     let imageUrls = [];
     if (images && images.length > 0) {
-      // if frontend sends base64 strings
       for (const img of images) {
         const uploadRes = await cloudinary.uploader.upload(img, {
           folder: "hari-om-fashion",
@@ -52,7 +50,7 @@ router.post("/", async (req, res) => {
       careInstructions,
       sizes: parseList(sizes),
       colors: parseList(colors),
-      isTrending: isTrending === "true",
+      isTrending: isTrending === "true" || isTrending === true,
       images: imageUrls,
       mainImage: imageUrls[0] || "",
       rating: 0,
@@ -91,7 +89,6 @@ router.put("/:id", async (req, res) => {
     let imageUrls = product.images;
 
     if (images && images.length > 0) {
-      // If frontend sends new base64 images, upload them
       imageUrls = [];
       for (const img of images) {
         const uploadRes = await cloudinary.uploader.upload(img, {
@@ -113,6 +110,8 @@ router.put("/:id", async (req, res) => {
     product.isTrending =
       typeof isTrending === "string"
         ? isTrending === "true"
+        : isTrending !== undefined
+        ? isTrending
         : product.isTrending;
     product.images = imageUrls;
     product.mainImage = imageUrls[0] || product.mainImage;

@@ -21,9 +21,9 @@ app.use(
 
 // ----------------- CORS Setup -----------------
 const allowedOrigins = [
-  "https://hari-om-fashion.onrender.com", // main site
+  "https://hari-om-fashion.onrender.com",
   "https://hariomfashion.onrender.com",
-  "https://hari-om-fashion-admin.onrender.com", // admin panel
+  "https://hari-om-fashion-admin.onrender.com",
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
@@ -33,13 +33,10 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Allow tools like Postman
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        console.warn("🚫 Blocked CORS request from:", origin);
-        return callback(new Error("Not allowed by CORS"));
-      }
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      console.warn("🚫 Blocked CORS request from:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
@@ -47,10 +44,11 @@ app.use(
 );
 
 // ----------------- Middleware -----------------
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase body limits to handle large Base64 image uploads
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
-// Disable COOP/COEP headers for embedding (Render safety)
+// Disable COOP/COEP headers for embedding
 app.use((req, res, next) => {
   res.removeHeader("Cross-Origin-Opener-Policy");
   res.removeHeader("Cross-Origin-Embedder-Policy");
