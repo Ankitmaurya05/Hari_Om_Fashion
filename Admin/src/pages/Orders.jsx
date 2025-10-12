@@ -24,7 +24,7 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  },);
 
   // Update order status
   const handleStatusChange = async (orderId, newStatus) => {

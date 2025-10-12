@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // ----------------- Load Environment Variables -----------------
 dotenv.config();
@@ -9,11 +11,19 @@ dotenv.config();
 // ----------------- Initialize App -----------------
 const app = express();
 
+// ----------------- Webhook Raw Body (MUST come before express.json) -----------------
+import paymentWebhook from "./routes/paymentWebhook.js";
+app.use(
+  "/api/webhook/razorpay",
+  express.raw({ type: "application/json" }),
+  paymentWebhook
+);
+
 // ----------------- CORS Setup -----------------
 const allowedOrigins = [
-  "https://hari-om-fashion.onrender.com", // your production frontend
+  "https://hari-om-fashion.onrender.com", // main site
   "https://hariomfashion.onrender.com",
-  "https://hari-om-fashion-admin.onrender.com",
+  "https://hari-om-fashion-admin.onrender.com", // admin panel
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
@@ -23,7 +33,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // Allow tools like Postman
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
@@ -40,7 +50,14 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ----------------- Routes -----------------
+// Disable COOP/COEP headers for embedding (Render safety)
+app.use((req, res, next) => {
+  res.removeHeader("Cross-Origin-Opener-Policy");
+  res.removeHeader("Cross-Origin-Embedder-Policy");
+  next();
+});
+
+// ----------------- Import Routes -----------------
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/product.js";
 import cartRoutes from "./routes/cart.js";
@@ -52,23 +69,8 @@ import adminRoutes from "./routes/admin.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import adminOrdersRoute from "./routes/adminOrders.js";
 import adminPaymentRoute from "./routes/adminPaymentRoutes.js";
-import paymentWebhook from "./routes/paymentWebhook.js";
 
-// Webhook (raw body)
-app.use(
-  "/api/webhook/razorpay",
-  express.raw({ type: "application/json" }),
-  paymentWebhook
-);
-
-// Disable certain headers for cross-origin embedding issues
-app.use((req, res, next) => {
-  res.removeHeader("Cross-Origin-Opener-Policy");
-  res.removeHeader("Cross-Origin-Embedder-Policy");
-  next();
-});
-
-// ----------------- API Routes -----------------
+// ----------------- Mount API Routes -----------------
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
@@ -83,10 +85,10 @@ app.use("/api/admin/payments", adminPaymentRoute);
 
 // ----------------- Health Check -----------------
 app.get("/", (req, res) => {
-  res.send("🚀 API is running successfully...");
+  res.send("🚀 Hari-Om Fashion API is running successfully...");
 });
 
-// ----------------- MongoDB -----------------
+// ----------------- MongoDB Connection -----------------
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);

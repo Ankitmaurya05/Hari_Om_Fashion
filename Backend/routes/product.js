@@ -1,22 +1,17 @@
 import express from "express";
 import Product from "../models/Product.js";
-import multer from "multer";
 import cloudinary from "../utils/cloudinary.js";
 
 const router = express.Router();
 
-// ===================== Multer Memory Storage =====================
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Helper: parse comma-separated list
+// Helper to parse comma-separated lists
 const parseList = (val) =>
   typeof val === "string"
     ? val.split(",").map((v) => v.trim()).filter(Boolean)
     : val;
 
 // ===================== CREATE PRODUCT =====================
-router.post("/", upload.array("images", 6), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const {
       name,
@@ -29,21 +24,22 @@ router.post("/", upload.array("images", 6), async (req, res) => {
       sizes,
       colors,
       isTrending,
+      images,
     } = req.body;
 
     if (!name || !price)
       return res.status(400).json({ message: "Name and price are required" });
 
-    // Upload images to Cloudinary
-    const images = [];
-    for (const file of req.files) {
-      const result = await cloudinary.uploader.upload_stream(
-        { folder: "hari-om-fashion" },
-        (err, result) => {
-          if (err) throw err;
-          images.push(result.secure_url);
-        }
-      ).end(file.buffer);
+    // Validate images
+    let imageUrls = [];
+    if (images && images.length > 0) {
+      // if frontend sends base64 strings
+      for (const img of images) {
+        const uploadRes = await cloudinary.uploader.upload(img, {
+          folder: "hari-om-fashion",
+        });
+        imageUrls.push(uploadRes.secure_url);
+      }
     }
 
     const product = new Product({
@@ -57,8 +53,8 @@ router.post("/", upload.array("images", 6), async (req, res) => {
       sizes: parseList(sizes),
       colors: parseList(colors),
       isTrending: isTrending === "true",
-      images,
-      mainImage: images[0] || "",
+      images: imageUrls,
+      mainImage: imageUrls[0] || "",
       rating: 0,
       reviewCount: 0,
     });
@@ -72,38 +68,56 @@ router.post("/", upload.array("images", 6), async (req, res) => {
 });
 
 // ===================== UPDATE PRODUCT =====================
-router.put("/:id", upload.array("images", 6), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-    const updates = { ...req.body };
+    const {
+      name,
+      price,
+      originalPrice,
+      category,
+      description,
+      fabric,
+      careInstructions,
+      sizes,
+      colors,
+      isTrending,
+      images,
+    } = req.body;
 
-    if (req.files && req.files.length > 0) {
-      const images = [];
-      for (const file of req.files) {
-        const result = await cloudinary.uploader.upload_stream(
-          { folder: "hari-om-fashion" },
-          (err, result) => {
-            if (err) throw err;
-            images.push(result.secure_url);
-          }
-        ).end(file.buffer);
-      }
-      updates.images = images;
-      updates.mainImage = images[0];
-    }
-
-    if (updates.sizes) updates.sizes = parseList(updates.sizes);
-    if (updates.colors) updates.colors = parseList(updates.colors);
-    if (updates.isTrending)
-      updates.isTrending = updates.isTrending === "true";
-
-    const updated = await Product.findByIdAndUpdate(req.params.id, updates, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updated)
+    const product = await Product.findById(req.params.id);
+    if (!product)
       return res.status(404).json({ message: "Product not found" });
 
+    let imageUrls = product.images;
+
+    if (images && images.length > 0) {
+      // If frontend sends new base64 images, upload them
+      imageUrls = [];
+      for (const img of images) {
+        const uploadRes = await cloudinary.uploader.upload(img, {
+          folder: "hari-om-fashion",
+        });
+        imageUrls.push(uploadRes.secure_url);
+      }
+    }
+
+    product.name = name || product.name;
+    product.price = price || product.price;
+    product.originalPrice = originalPrice || product.originalPrice;
+    product.category = category || product.category;
+    product.description = description || product.description;
+    product.fabric = fabric || product.fabric;
+    product.careInstructions = careInstructions || product.careInstructions;
+    product.sizes = parseList(sizes) || product.sizes;
+    product.colors = parseList(colors) || product.colors;
+    product.isTrending =
+      typeof isTrending === "string"
+        ? isTrending === "true"
+        : product.isTrending;
+    product.images = imageUrls;
+    product.mainImage = imageUrls[0] || product.mainImage;
+
+    const updated = await product.save();
     res.json(updated);
   } catch (err) {
     console.error("❌ Update Product Error:", err);
