@@ -4,13 +4,19 @@ import cloudinary from "../utils/cloudinary.js";
 
 const router = express.Router();
 
-// Helper to parse comma-separated lists
+// =============================
+// 🔹 Helper to parse comma-separated lists
+// =============================
 const parseList = (val) =>
   typeof val === "string"
     ? val.split(",").map((v) => v.trim()).filter(Boolean)
-    : val;
+    : Array.isArray(val)
+    ? val
+    : [];
 
-// ===================== CREATE PRODUCT =====================
+// =============================
+// 🆕 CREATE PRODUCT
+// =============================
 router.post("/", async (req, res) => {
   try {
     const {
@@ -27,9 +33,14 @@ router.post("/", async (req, res) => {
       images,
     } = req.body;
 
-    if (!name || !price)
-      return res.status(400).json({ message: "Name and price are required" });
+    // 🔸 Validation
+    if (!name || !price || !category) {
+      return res
+        .status(400)
+        .json({ message: "Name, price, and category are required" });
+    }
 
+    // 🔸 Upload images to Cloudinary
     let imageUrls = [];
     if (images && images.length > 0) {
       for (const img of images) {
@@ -40,6 +51,7 @@ router.post("/", async (req, res) => {
       }
     }
 
+    // 🔸 Create new product
     const product = new Product({
       name,
       price,
@@ -50,11 +62,12 @@ router.post("/", async (req, res) => {
       careInstructions,
       sizes: parseList(sizes),
       colors: parseList(colors),
-      isTrending: isTrending === "true" || isTrending === true,
+      isTrending:
+        typeof isTrending === "string"
+          ? isTrending === "true"
+          : Boolean(isTrending),
       images: imageUrls,
       mainImage: imageUrls[0] || "",
-      rating: 0,
-      reviewCount: 0,
     });
 
     const saved = await product.save();
@@ -65,7 +78,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ===================== UPDATE PRODUCT =====================
+// =============================
+// ✏️ UPDATE PRODUCT
+// =============================
 router.put("/:id", async (req, res) => {
   try {
     const {
@@ -86,8 +101,8 @@ router.put("/:id", async (req, res) => {
     if (!product)
       return res.status(404).json({ message: "Product not found" });
 
+    // 🔸 Update images if new ones are provided
     let imageUrls = product.images;
-
     if (images && images.length > 0) {
       imageUrls = [];
       for (const img of images) {
@@ -98,21 +113,20 @@ router.put("/:id", async (req, res) => {
       }
     }
 
-    product.name = name || product.name;
-    product.price = price || product.price;
-    product.originalPrice = originalPrice || product.originalPrice;
-    product.category = category || product.category;
-    product.description = description || product.description;
-    product.fabric = fabric || product.fabric;
-    product.careInstructions = careInstructions || product.careInstructions;
-    product.sizes = parseList(sizes) || product.sizes;
-    product.colors = parseList(colors) || product.colors;
+    // 🔸 Update fields
+    product.name = name ?? product.name;
+    product.price = price ?? product.price;
+    product.originalPrice = originalPrice ?? product.originalPrice;
+    product.category = category ?? product.category;
+    product.description = description ?? product.description;
+    product.fabric = fabric ?? product.fabric;
+    product.careInstructions = careInstructions ?? product.careInstructions;
+    product.sizes = sizes ? parseList(sizes) : product.sizes;
+    product.colors = colors ? parseList(colors) : product.colors;
     product.isTrending =
       typeof isTrending === "string"
         ? isTrending === "true"
-        : isTrending !== undefined
-        ? isTrending
-        : product.isTrending;
+        : isTrending ?? product.isTrending;
     product.images = imageUrls;
     product.mainImage = imageUrls[0] || product.mainImage;
 
@@ -124,7 +138,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// ===================== DELETE PRODUCT =====================
+// =============================
+// ❌ DELETE PRODUCT
+// =============================
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Product.findByIdAndDelete(req.params.id);
@@ -137,7 +153,9 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// ===================== GET ALL PRODUCTS =====================
+// =============================
+// 📦 GET ALL PRODUCTS
+// =============================
 router.get("/", async (_, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -148,7 +166,9 @@ router.get("/", async (_, res) => {
   }
 });
 
-// ===================== GET PRODUCTS BY CATEGORY =====================
+// =============================
+// 🏷️ GET PRODUCTS BY CATEGORY
+// =============================
 router.get("/category/:category", async (req, res) => {
   try {
     const category = req.params.category.toLowerCase();
@@ -162,7 +182,9 @@ router.get("/category/:category", async (req, res) => {
   }
 });
 
-// ===================== GET SINGLE PRODUCT =====================
+// =============================
+// 🔍 GET SINGLE PRODUCT
+// =============================
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
