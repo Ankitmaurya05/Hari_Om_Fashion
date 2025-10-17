@@ -1,11 +1,18 @@
 import express from "express";
 import Product from "../models/Product.js";
 import cloudinary from "../utils/cloudinary.js";
+import multer from "multer";
 
 const router = express.Router();
 
 // =============================
-// 🔹 Helper to parse comma-separated lists
+// ⚙️ Multer Setup (for file uploads)
+// =============================
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// =============================
+// 🔹 Helper: Parse comma-separated or array values
 // =============================
 const parseList = (val) =>
   typeof val === "string"
@@ -15,9 +22,25 @@ const parseList = (val) =>
     : [];
 
 // =============================
+// ⚙️ Helper: Upload image buffer to Cloudinary
+// =============================
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "hari-om-fashion" },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result.secure_url);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+};
+
+// =============================
 // 🆕 CREATE PRODUCT
 // =============================
-router.post("/", async (req, res) => {
+router.post("/", upload.array("images", 6), async (req, res) => {
   try {
     const {
       name,
@@ -27,10 +50,7 @@ router.post("/", async (req, res) => {
       description,
       fabric,
       careInstructions,
-      sizes,
-      colors,
       isTrending,
-      images,
     } = req.body;
 
     // 🔸 Validation
@@ -40,18 +60,16 @@ router.post("/", async (req, res) => {
         .json({ message: "Name, price, and category are required" });
     }
 
-    // 🔸 Upload images to Cloudinary
+    // 🔸 Upload images from form-data
     let imageUrls = [];
-    if (images && images.length > 0) {
-      for (const img of images) {
-        const uploadRes = await cloudinary.uploader.upload(img, {
-          folder: "hari-om-fashion",
-        });
-        imageUrls.push(uploadRes.secure_url);
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const url = await uploadToCloudinary(file.buffer);
+        imageUrls.push(url);
       }
     }
 
-    // 🔸 Create new product
+    // 🔸 Create and save product
     const product = new Product({
       name,
       price,
@@ -60,8 +78,8 @@ router.post("/", async (req, res) => {
       description,
       fabric,
       careInstructions,
-      sizes: parseList(sizes),
-      colors: parseList(colors),
+      sizes: parseList(req.body.sizes),
+      colors: parseList(req.body.colors),
       isTrending:
         typeof isTrending === "string"
           ? isTrending === "true"
@@ -81,8 +99,12 @@ router.post("/", async (req, res) => {
 // =============================
 // ✏️ UPDATE PRODUCT
 // =============================
-router.put("/:id", async (req, res) => {
+router.put("/:id", upload.array("images", 6), async (req, res) => {
   try {
+    const product = await Product.findById(req.params.id);
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
     const {
       name,
       price,
@@ -91,25 +113,16 @@ router.put("/:id", async (req, res) => {
       description,
       fabric,
       careInstructions,
-      sizes,
-      colors,
       isTrending,
-      images,
     } = req.body;
 
-    const product = await Product.findById(req.params.id);
-    if (!product)
-      return res.status(404).json({ message: "Product not found" });
-
-    // 🔸 Update images if new ones are provided
+    // 🔸 Update images if new ones are uploaded
     let imageUrls = product.images;
-    if (images && images.length > 0) {
+    if (req.files && req.files.length > 0) {
       imageUrls = [];
-      for (const img of images) {
-        const uploadRes = await cloudinary.uploader.upload(img, {
-          folder: "hari-om-fashion",
-        });
-        imageUrls.push(uploadRes.secure_url);
+      for (const file of req.files) {
+        const url = await uploadToCloudinary(file.buffer);
+        imageUrls.push(url);
       }
     }
 
@@ -121,8 +134,8 @@ router.put("/:id", async (req, res) => {
     product.description = description ?? product.description;
     product.fabric = fabric ?? product.fabric;
     product.careInstructions = careInstructions ?? product.careInstructions;
-    product.sizes = sizes ? parseList(sizes) : product.sizes;
-    product.colors = colors ? parseList(colors) : product.colors;
+    product.sizes = req.body.sizes ? parseList(req.body.sizes) : product.sizes;
+    product.colors = req.body.colors ? parseList(req.body.colors) : product.colors;
     product.isTrending =
       typeof isTrending === "string"
         ? isTrending === "true"

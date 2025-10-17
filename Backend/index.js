@@ -45,8 +45,9 @@ app.use(
 
 // ----------------- Middleware -----------------
 // Increase body limits to handle large Base64 image uploads
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ limit: "20mb", extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
 
 // Disable COOP/COEP headers for embedding
 app.use((req, res, next) => {
