@@ -2,6 +2,7 @@ import express from "express";
 import Product from "../models/Product.js";
 import cloudinary from "../utils/cloudinary.js";
 import multer from "multer";
+import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = express.Router();
 
@@ -38,9 +39,9 @@ const uploadToCloudinary = (fileBuffer) => {
 };
 
 // =============================
-// 🆕 CREATE PRODUCT
+// 🆕 CREATE PRODUCT (Admin Only)
 // =============================
-router.post("/", upload.array("images", 6), async (req, res) => {
+router.post("/", adminAuth, upload.array("images", 6), async (req, res) => {
   try {
     const {
       name,
@@ -97,9 +98,9 @@ router.post("/", upload.array("images", 6), async (req, res) => {
 });
 
 // =============================
-// ✏️ UPDATE PRODUCT
+// ✏️ UPDATE PRODUCT (Admin Only)
 // =============================
-router.put("/:id", upload.array("images", 6), async (req, res) => {
+router.put("/:id", adminAuth, upload.array("images", 6), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product)
@@ -152,9 +153,9 @@ router.put("/:id", upload.array("images", 6), async (req, res) => {
 });
 
 // =============================
-// ❌ DELETE PRODUCT
+// ❌ DELETE PRODUCT (Admin Only)
 // =============================
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminAuth, async (req, res) => {
   try {
     const deleted = await Product.findByIdAndDelete(req.params.id);
     if (!deleted)

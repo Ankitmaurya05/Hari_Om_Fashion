@@ -1,44 +1,77 @@
 // routes/adminOrders.js
 import express from "express";
 import Order from "../models/Order.js";
+import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = express.Router();
 
-/* ---------------- Get All Orders (Admin Dashboard) ---------------- */
+// Protect all routes with admin authentication
+router.use(adminAuth);
+
+/* =====================================================
+   GET ALL ORDERS (ADMIN)
+   ===================================================== */
 router.get("/all", async (req, res) => {
   try {
-    const orders = await Order.find()
+    const orders = await Order.find({})
       .populate("user", "name email phone address")
       .populate("items.product", "name mainImage price category")
       .sort({ createdAt: -1 });
 
-    res.json(orders);
+    return res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
   } catch (err) {
-    console.error("Fetch all orders error:", err);
-    res.status(500).json({ message: "Failed to fetch orders", error: err.message });
+    console.error("❌ Fetch all orders error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+    });
   }
 });
 
-/* ---------------- Update Order Status ---------------- */
+/* =====================================================
+   UPDATE ORDER STATUS
+   ===================================================== */
 router.patch("/:id/status", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  const validStatus = ["Pending", "Shipped", "Delivered", "Completed", "Cancelled"];
-  if (!validStatus.includes(status))
-    return res.status(400).json({ message: "Invalid status value" });
+  const VALID_STATUS = ["Pending", "Shipped", "Delivered", "Completed", "Cancelled"];
+
+  if (!VALID_STATUS.includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid order status",
+    });
+  }
 
   try {
     const order = await Order.findById(id);
-    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
 
     order.status = status;
     await order.save();
 
-    res.json({ message: "Order status updated", order });
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order,
+    });
   } catch (err) {
-    console.error("Update status error:", err);
-    res.status(500).json({ message: "Failed to update status", error: err.message });
+    console.error("❌ Update order status error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update order status",
+    });
   }
 });
 

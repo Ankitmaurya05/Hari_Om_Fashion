@@ -1,7 +1,11 @@
 import express from "express";
 import Payment from "../models/Payment.js";
+import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = express.Router();
+
+// Protect all routes with admin authentication
+router.use(adminAuth);
 
 // 🔹 Get payment summary for admin dashboard
 router.get("/", async (req, res) => {

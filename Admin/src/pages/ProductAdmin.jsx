@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Pencil, Trash2, Plus, X, Loader2 } from "lucide-react";
 
-const API_URL = "https://hari-om-fashion.onrender.com/api/products";
+const API_URL = `${import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com"}/api/products`;
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -32,7 +32,9 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
       setProducts(res.data);
     } catch (err) {
       console.error("❌ Fetch Error:", err.response?.data?.message || err.message);
@@ -114,7 +116,9 @@ const AdminProducts = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
       fetchProducts();
     } catch (err) {
       console.error("❌ Delete Error:", err.response?.data?.message || err.message);
@@ -144,14 +148,19 @@ const AdminProducts = () => {
       if (form.mainImage) formData.append("images", form.mainImage);
       form.subImages.forEach((f) => formData.append("images", f));
 
+      const authHeaders = {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      };
+
       if (editingId) {
         await axios.put(`${API_URL}/${editingId}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: authHeaders,
         });
         alert("✅ Product updated!");
       } else {
         await axios.post(API_URL, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: authHeaders,
         });
         alert("✅ Product added!");
       }

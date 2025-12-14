@@ -3,8 +3,12 @@ import Product from "../models/Product.js";
 import Review from "../models/Review.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js"; // For payment stats
+import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = express.Router();
+
+// Protect all dashboard routes with admin authentication
+router.use(adminAuth);
 
 // -------------------- Dashboard Counts --------------------
 router.get("/counts", async (req, res) => {

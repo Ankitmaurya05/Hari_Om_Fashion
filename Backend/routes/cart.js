@@ -84,12 +84,20 @@ router.delete("/remove/:productId", async (req, res) => {
     res.status(500).json({ message: "Failed to remove item" });
   }
 });
-// backend/routes/cart.js
-router.delete("/clear", authMiddleware, async (req, res) => {
-  const user = req.user;
-  user.cart = [];
-  await user.save();
-  res.json({ items: [] });
+
+// CLEAR cart
+router.delete("/clear", async (req, res) => {
+  try {
+    const cart = await Cart.findOne({ user: req.user._id });
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+    
+    cart.items = [];
+    await cart.save();
+    res.status(200).json({ message: "Cart cleared successfully", cart });
+  } catch (err) {
+    console.error("Clear cart error:", err);
+    res.status(500).json({ message: "Failed to clear cart", error: err.message });
+  }
 });
 
 export default router;

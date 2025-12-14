@@ -2,8 +2,8 @@
 import React, { useEffect, useState, useRef, useCallback, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-motion
 import {
   ShoppingBag,
   Sparkles,
@@ -140,6 +140,7 @@ const Home = () => {
       }
     };
     fetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-slide banner

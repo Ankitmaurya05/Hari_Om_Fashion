@@ -76,6 +76,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   useEffect(() => {
     fetchCounts();
     fetchPayments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderContent = () => {

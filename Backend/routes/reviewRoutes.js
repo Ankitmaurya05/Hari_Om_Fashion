@@ -1,6 +1,7 @@
 import express from "express";
 import Review from "../models/Review.js";
 import Product from "../models/Product.js";
+import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = express.Router();
 
@@ -59,8 +60,8 @@ router.get("/product/:productId", async (req, res) => {
   }
 });
 
-// 🔴 DELETE REVIEW
-router.delete("/:id", async (req, res) => {
+// 🔴 DELETE REVIEW (Admin Only)
+router.delete("/:id", adminAuth, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
     if (!review) return res.status(404).json({ message: "Review not found" });

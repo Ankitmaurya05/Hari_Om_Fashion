@@ -7,9 +7,6 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "hariom";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "@hariom";
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
-// Middleware to parse JSON (ensure this is in server.js)
-router.use(express.json());
-
 // Admin login route
 router.post("/login", (req, res) => {
   try {

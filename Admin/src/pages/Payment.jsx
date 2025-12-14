@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
-const BACKEND_URL = "https://hari-om-fashion.onrender.com/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // card, upi, cod, pending
 
 const Payment = () => {
@@ -18,9 +18,8 @@ const Payment = () => {
   useEffect(() => {
     const fetchPaymentStats = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
-        const { data } = await axios.get(`${BACKEND_URL}/admin/payments`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const { data } = await axios.get(`${API_URL}/admin/payments`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
         });
         setStats(data);
         setFilteredPayments(data.payments);

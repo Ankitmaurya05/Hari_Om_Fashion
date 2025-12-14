@@ -6,7 +6,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // ----------------- Load Environment Variables -----------------
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 // ----------------- Initialize App -----------------
 const app = express();
@@ -25,23 +28,33 @@ const allowedOrigins = [
   "https://hariomfashion.onrender.com",
   "https://hari-om-fashion-admin.onrender.com",
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
   "http://127.0.0.1:3000",
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      console.warn("🚫 Blocked CORS request from:", origin);
-      return callback(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-  })
-);
+// CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn("🚫 Blocked CORS request from:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options("*", cors(corsOptions));
 
 // ----------------- Middleware -----------------
 // Increase body limits to handle large Base64 image uploads

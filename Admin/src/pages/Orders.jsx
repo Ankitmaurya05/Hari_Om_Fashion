@@ -12,11 +12,16 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/admin/orders/all`);
-      setOrders(res.data);
+      const res = await axios.get(`${API_URL}/admin/orders/all`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
+      // Ensure we always have an array
+      const ordersData = res.data.orders || res.data || [];
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
     } catch (err) {
       console.error(err.response?.data || err.message);
       toast.error("Failed to fetch orders");
+      setOrders([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -24,14 +29,19 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  },);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update order status
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const res = await axios.patch(`${API_URL}/admin/orders/${orderId}/status`, {
-        status: newStatus,
-      });
+      const res = await axios.patch(
+        `${API_URL}/admin/orders/${orderId}/status`,
+        { status: newStatus },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        }
+      );
 
       setOrders((prev) =>
         prev.map((order) =>
@@ -89,7 +99,7 @@ const AdminOrders = () => {
 
       {loading ? (
         <p>Loading orders...</p>
-      ) : orders.length === 0 ? (
+      ) : !Array.isArray(orders) || orders.length === 0 ? (
         <p>No orders found.</p>
       ) : (
         <div className="space-y-4">

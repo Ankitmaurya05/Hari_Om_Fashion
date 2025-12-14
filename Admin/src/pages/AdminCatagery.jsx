@@ -16,16 +16,21 @@ const AdminCatagery = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(API_URL);
-      setProducts(res.data);
+      const res = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
+      // Ensure we always have an array
+      setProducts(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching products:", err);
+      setProducts([]); // Set empty array on error
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Delete product
@@ -33,19 +38,23 @@ const AdminCatagery = () => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     setDeletingId(id);
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      setProducts((prev) => prev.filter((p) => p._id !== id));
+      await axios.delete(`${API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
+      setProducts((prev) => (Array.isArray(prev) ? prev.filter((p) => p._id !== id) : []));
     } catch (err) {
       console.error("Error deleting product:", err);
+      alert("Failed to delete product. Check backend logs.");
     }
     setDeletingId(null);
   };
 
-  // Filter products by category
-  const filteredProducts =
-    category === "All"
+  // Filter products by category - ensure products is an array
+  const filteredProducts = Array.isArray(products)
+    ? category === "All"
       ? products
-      : products.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+      : products.filter((p) => p.category?.toLowerCase() === category.toLowerCase())
+    : [];
 
   return (
     <div className="container mx-auto p-4">

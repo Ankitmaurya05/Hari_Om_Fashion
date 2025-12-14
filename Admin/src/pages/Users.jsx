@@ -6,26 +6,33 @@ const AdminUsers = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "https://hari-om-fashion.onrender.com/api/dashboard/users";
-  const token = localStorage.getItem("token"); // if protected route
+  const API_URL = import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com";
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(API_URL, {
-        headers: { Authorization: `Bearer ${token}` }, // optional
+      const res = await axios.get(`${API_URL}/api/dashboard/users`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
-      setUsers(res.data.users);
-      setTotalUsers(res.data.totalUsers);
+      // Ensure we always have an array
+      const usersData = res.data?.users || [];
+      setUsers(Array.isArray(usersData) ? usersData : []);
+      setTotalUsers(res.data?.totalUsers || usersData.length || 0);
     } catch (err) {
       console.error("Error fetching users:", err);
-      alert("Failed to fetch users.");
+      const errorMessage = err.code === "ERR_NETWORK" 
+        ? "Cannot connect to server. Please check if the backend is running."
+        : err.response?.data?.message || "Failed to fetch users.";
+      alert(errorMessage);
+      setUsers([]); // Set empty array on error
+      setTotalUsers(0);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -44,7 +51,7 @@ const AdminUsers = () => {
 
       {loading ? (
         <p className="text-center text-gray-500">Loading users...</p>
-      ) : users.length === 0 ? (
+      ) : !Array.isArray(users) || users.length === 0 ? (
         <p className="text-center text-gray-500">No users found.</p>
       ) : (
         <div className="overflow-x-auto">

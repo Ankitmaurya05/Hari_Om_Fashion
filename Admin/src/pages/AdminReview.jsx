@@ -14,15 +14,18 @@ const AdminReview = () => {
     setLoading(true);
     try {
       const res = await axios.get(API_URL);
-      setReviews(res.data);
+      // Ensure we always have an array
+      setReviews(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching reviews:", err);
+      setReviews([]); // Set empty array on error
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Delete review
@@ -31,8 +34,10 @@ const AdminReview = () => {
 
     setDeletingId(id);
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      setReviews((prev) => prev.filter((r) => r._id !== id));
+      await axios.delete(`${API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
+      setReviews((prev) => (Array.isArray(prev) ? prev.filter((r) => r._id !== id) : []));
     } catch (err) {
       console.error("Error deleting review:", err);
       alert("Failed to delete review. Check backend logs.");
@@ -40,10 +45,10 @@ const AdminReview = () => {
     setDeletingId(null);
   };
 
-  // Compute average rating
+  // Compute average rating - ensure reviews is an array
   const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    Array.isArray(reviews) && reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
       : 0;
 
   return (
