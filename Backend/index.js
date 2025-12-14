@@ -53,9 +53,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
-app.options("*", cors(corsOptions));
-
 // ----------------- Middleware -----------------
 // Increase body limits to handle large Base64 image uploads
 app.use(express.json({ limit: "50mb" }));
