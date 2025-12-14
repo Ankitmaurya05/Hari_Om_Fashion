@@ -8,7 +8,7 @@ const AdminLogin = ({ setIsLoggedIn, toast }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/admin/login`; // Env variable
+  const API_URL = `${import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com"}/api/admin/login`; // Env variable
 
   // Redirect if already logged in
   useEffect(() => {

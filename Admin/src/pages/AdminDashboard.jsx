@@ -24,7 +24,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const [loadingPayments, setLoadingPayments] = useState(true);
 
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL; // Env variable
+  const API_URL = import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com"; // Env variable
 
   // Redirect if no token
   useEffect(() => {

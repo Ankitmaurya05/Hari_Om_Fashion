@@ -10,7 +10,7 @@ const AdminCatagery = () => {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/products`; // Using env variable
+  const API_URL = `${import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com"}/api/products`; // Using env variable
 
   // Fetch all products
   const fetchProducts = async () => {

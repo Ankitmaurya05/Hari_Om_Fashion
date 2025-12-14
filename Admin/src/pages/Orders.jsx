@@ -6,7 +6,7 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL; // Using env variable
+  const API_URL = import.meta.env.VITE_API_URL || "https://hari-om-fashion.onrender.com"; // Using env variable
 
   // Fetch all orders
   const fetchOrders = async () => {
