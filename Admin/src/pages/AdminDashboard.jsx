@@ -39,7 +39,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const fetchCounts = async () => {
     setLoadingCounts(true);
     try {
-      const res = await axios.get(`${API_URL}/dashboard/counts`, {
+      const res = await axios.get(`${API_URL}/api/dashboard/counts`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
       setCounts(res.data);
@@ -54,7 +54,7 @@ const AdminDashboard = ({ activeTab = "" }) => {
   const fetchPayments = async () => {
     setLoadingPayments(true);
     try {
-      const res = await axios.get(`${API_URL}/dashboard/payments`, {
+      const res = await axios.get(`${API_URL}/api/dashboard/payments`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
 

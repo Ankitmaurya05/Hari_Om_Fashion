@@ -12,7 +12,7 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/admin/orders/all`, {
+      const res = await axios.get(`${API_URL}/api/admin/orders/all`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
       });
       // Ensure we always have an array
@@ -36,7 +36,7 @@ const AdminOrders = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const res = await axios.patch(
-        `${API_URL}/admin/orders/${orderId}/status`,
+        `${API_URL}/api/admin/orders/${orderId}/status`,
         { status: newStatus },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
