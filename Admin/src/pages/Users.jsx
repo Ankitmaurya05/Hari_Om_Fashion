@@ -20,6 +20,13 @@ const AdminUsers = () => {
       setTotalUsers(res.data?.totalUsers || usersData.length || 0);
     } catch (err) {
       console.error("Error fetching users:", err);
+      if (err.response?.status === 401) {
+        alert("Authentication failed. Please login again.");
+        // Optionally redirect to login
+        localStorage.removeItem("adminToken");
+        window.location.href = "/admin/login";
+        return;
+      }
       const errorMessage = err.code === "ERR_NETWORK" 
         ? "Cannot connect to server. Please check if the backend is running."
         : err.response?.data?.message || "Failed to fetch users.";

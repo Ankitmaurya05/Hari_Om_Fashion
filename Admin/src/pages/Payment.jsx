@@ -18,16 +18,19 @@ const Payment = () => {
   useEffect(() => {
     const fetchPaymentStats = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/admin/payments`, {
+        const { data } = await axios.get(`${API_URL}/api/admin/payments`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
         });
         setStats(data);
-        setFilteredPayments(data.payments);
+        setFilteredPayments(data.payments || []);
       } catch (err) {
         console.error("Failed to fetch payment stats:", err);
+        setStats(null);
+        setFilteredPayments([]);
       }
     };
     fetchPaymentStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
